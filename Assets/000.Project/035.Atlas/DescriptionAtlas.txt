@@ -1,0 +1,16 @@
+
+UGUI Atlas 만들기
+
+이미지의
+Texture Type -> Sprite(2D and UI)
+Packing Tag -> 적당한 문구로 (ex: ui_button)
+Advanced > Read/Write Enabled 끄기
+
+유니티 메뉴 중 Window/ Sprite Packer 열기
+좌상단 Pack 버튼 누르면 자동으로 생성
+
+사용법
+packing 된 이미지를 노출해주지 않는다.
+패킹된 이미지 자체를 그냥 쓰면 play 하지 않으면
+드로우콜(Batch) 가 이미지 개수 만큼 증가 하지만
+play시 적용되어 드로우콜이 의도한 대로 줄어든다.

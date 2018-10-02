@@ -1,0 +1,2 @@
+function print(msg, ...)
+end

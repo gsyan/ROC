@@ -1,0 +1,17 @@
+Script Description
+
+
+
+
+
+
+
+998.Library
+	<< CsvFile.cs >>
+		csv 해석하는데 쓰이는 라이브러리 cs
+
+
+Editor
+	<< PatchInspector >>
+		패치 scene 의 인스팩터
+		※ 참고로 Editor 폴더의 이름은 Resources 폴더와 마찮가지로 변경해서는 안된다.

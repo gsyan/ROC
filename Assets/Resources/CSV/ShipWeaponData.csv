@@ -1,0 +1,11 @@
+type,level,attack,attack_distance,attack_angle,accuracy,critical,cool_time_max,cool_time_cur
+Beam,1,10,100,30,30,10,5,0
+Beam,2,11,110,30,31,10,5,0
+Beam,3,12,120,30,32,10,5,0
+Beam,4,13,130,30,33,10,5,0
+Beam,5,14,140,30,34,10,4,0
+Beam,6,15,150,30,35,10,4,0
+Beam,7,16,160,30,36,10,4,0
+Beam,8,17,170,30,37,10,4,0
+Beam,9,18,180,30,38,10,3,0
+Beam,10,19,190,30,39,10,3,0

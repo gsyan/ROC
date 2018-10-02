@@ -1,0 +1,13 @@
+Library
+obj
+Temp
+bin
+*.csproj
+*.unityproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.suo
+*.apk
+*.vs
