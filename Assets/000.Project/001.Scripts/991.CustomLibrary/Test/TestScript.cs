@@ -50,12 +50,16 @@ public class TestScript : MonoBehaviour
         _lr2.SetPosition(0, p3.position);
         _lr2.SetPosition(1, p4.position);
 
+        Vector2 p0Position = Vector2.zero;
+        bool intersection = Utility.LineSegmentIntersection2DWithGaussianElimination(p1.position, p2.position, p3.position, p4.position, ref p0Position);
+        p0.position = new Vector3(p0Position.x, p0Position.y, p1.position.z);
 
-        Vector3 p0Position = Vector3.zero;
+
+        //Vector3 p0Position = Vector3.zero;
         //bool intersection = Utility.LineIntersection3DWithGaussianElimination(p1.position, p2.position - p1.position, p3.position, p4.position - p3.position, ref p0Position);
-        Utility.Vector3ParallelCheck(p2.position - p1.position, p4.position - p3.position);
+        //Utility.Vector3ParallelCheck(p2.position - p1.position, p4.position - p3.position);
         //p0.position = new Vector3(p0Position.x, p0Position.y, p1.position.z);
-        p0.position = p0Position;
+        //p0.position = p0Position;
 
 
     }

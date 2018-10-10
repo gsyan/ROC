@@ -864,7 +864,7 @@ public partial class Utility
 
         //t 와 s 의 분모는 같음,
         float under = (v2.x * v1.y) - (v1.x * v2.y);
-        if (under == 0.0f)//0이면, 두 직선이 평행
+        if (Mathf.Abs(under) < float.Epsilon)//0이면, 두 직선이 평행
         {
             return false;
         }
@@ -889,7 +889,7 @@ public partial class Utility
         //y1 + b1 * t = y2 + b2 * s -> 교점의 y 좌표
 
         BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(v1.x, -v2.x, v1.y, -v2.y);
-        if (mat2x2.Determinant() == 0.0f)
+        if (Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)
         {
             return false;
         }
@@ -922,7 +922,7 @@ public partial class Utility
 
         //t 와 s 의 분모는 같음,
         float under = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
-        if(under == 0.0f)//0이면, 두 직선이 평행
+        if (Mathf.Abs(under) < float.Epsilon)//0이면, 두 직선이 평행
         {
             return false;
         }
@@ -952,7 +952,7 @@ public partial class Utility
         // y1 * (1-t) + y2 * t = y3 * (1-s) + y4 * s -> 교점의 y 좌표
 
         BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(p2.x - p1.x, p4.x - p3.x, p2.y - p1.y, p4.y - p3.y);
-        if (mat2x2.Determinant() == 0.0f)
+        if ( Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)
         {
             return false;
         }
@@ -977,6 +977,17 @@ public partial class Utility
     public static bool LineIntersection3D(Vector3 p1, Vector3 v1, Vector3 p2, Vector3 v2, ref Vector3 p0)
     {
         //p1을 지나는 벡터 v1 인 직선과 p2을 지나는 벡터 v2 인 직선의 교점을 구한다.
+        
+        //평면의 결정 조건
+        //1) 한 직선 위에 있지 않은 세 점
+        //2) 평면 위의 한 직선과 그 직선 위에 있지 않은 한 점
+        //3) 한 점에서 만나는 두 직선
+        //4) 평행한 두 직선
+        
+        //한평면 위에 있는 경우: 한점에서 만남(만남), 일치(만남), 평행(만나지않음)
+        //꼬인위치 평면위에 있지도 만나지도 않는다.
+
+
 
         return true;
     }
