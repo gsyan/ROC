@@ -80,7 +80,7 @@ namespace BKST
         }
 
 
-        public float GetDeterminant()
+        public float Determinant()
         {
             return m00 * (m11 * m22 - m12 * m21)
             - m01 * (m10 * m22 - m12 * m20)
@@ -89,7 +89,7 @@ namespace BKST
 
         public Matrix3x3 Invert()
         {
-            float determinant = GetDeterminant();
+            float determinant = Determinant();
 
             if (determinant == 0)
                 throw new UnityException("Can't invert matrix with determinant 0");
@@ -175,7 +175,7 @@ namespace BKST
 
         public override string ToString()
         {
-            float det = GetDeterminant();
+            float det = Determinant();
             return string.Format("[Matrix3x3: det={9} m00={0}, m01={1}, m02={2}, m10={3}, m11={4}, m12={5}, m20={6}, m21={7}, m22={8}]", m00, m10, m20, m01, m11, m21, m02, m12, m22, det);
         }
     }

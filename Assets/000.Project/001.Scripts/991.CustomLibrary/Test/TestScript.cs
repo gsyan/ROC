@@ -50,11 +50,14 @@ public class TestScript : MonoBehaviour
         _lr2.SetPosition(0, p3.position);
         _lr2.SetPosition(1, p4.position);
 
+
         Vector3 p0Position = Vector3.zero;
-        bool intersection = LineIntersection(p1.position, p2.position - p1.position, p3.position, p4.position - p3.position, ref p0Position);
+        //bool intersection = Utility.LineIntersection3DWithGaussianElimination(p1.position, p2.position - p1.position, p3.position, p4.position - p3.position, ref p0Position);
+        Utility.Vector3ParallelCheck(p2.position - p1.position, p4.position - p3.position);
+        //p0.position = new Vector3(p0Position.x, p0Position.y, p1.position.z);
         p0.position = p0Position;
 
-        
+
     }
 
 
@@ -99,9 +102,11 @@ public class TestScript : MonoBehaviour
 
         float A1, B1, C1;
         float A2, B2, C2;
+
         A1 = v1.x;
         B1 = v2.x;
         C1 = p2.x - p1.x;
+
         A2 = v1.y;
         B2 = v2.y;
         C2 = p2.y - p1.y;
@@ -116,10 +121,29 @@ public class TestScript : MonoBehaviour
 
     bool LineIntersection2(Vector3 p1, Vector3 v1, Vector3 p2, Vector3 v2, ref Vector3 p0)
     {
-        float det = v1.cross
+        
 
         return true;
     }
+    bool LineSegmentIntersection(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, ref Vector3 p0)
+    {
+        //아래의 주석된 내용을 바탕으로 계산
+        //p1 = (x1, y1, z1), p2 = (x2, y2, z2) , p3 = (x3, y3, z3), p4 = (x4, y4, z4)
+
+        //교점은
+        //p0 = p1 * (1-t) + p2 * t = p3 * (1-s) + p4 * s
+        //x1 * (1-t) + x2 * t = x3 * (1-s) + x4 * s
+        //y1 * (1-t) + y2 * t = y3 * (1-s) + y4 * s
+        //z1 * (1-t) + z2 * t = z3 * (1-s) + z4 * s
+
+        //t, s 는 벡터을 변화 시키는 변수임, t 와 s를 구하기 위해 식을 정리
+        //a1 * t - a2 * s + (x1 - x2) = 0
+        //b1 * t - b2 * s + (y1 - y2) = 0
+        //c1 * t - c2 * s + (z1 - z2) = 0
+
+        return true;
+    }
+
 
     float[] GaussianElimination(int row, float[,] mat)
     {

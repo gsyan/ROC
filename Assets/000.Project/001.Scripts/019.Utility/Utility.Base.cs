@@ -3,6 +3,7 @@ using System.Collections;
 
 public partial class Utility
 {
+    #region Game
     public static float GetNextRefreshTime(int day = 1)
     {
         System.DateTime current = GInfo.serverTime;
@@ -545,6 +546,9 @@ public partial class Utility
         }
     }
 
+    #endregion Game 
+
+
     #region Make Object
     /// Make Plane with 3 points(triangle)
     public static Vector3[] GetQuadPointsFromTriangle(Transform p1, Transform p2, Transform p3)
@@ -673,6 +677,84 @@ public partial class Utility
         return a * b / (GetGCD(a, b));
     }
 
+    private static float[] GaussianElimination(int row, float[,] mat)
+    {
+        int column = row + 1;
+        float[] ans = new float[row];
+        float divisor = 1.0f;
+        //상삼각행렬을 만드는 작업
+        //row 1, col 0 에 기준점을 잡고 시작
+        //row 1, col 0 을 포함해 col 0의 row 값들을 모두 0으로 만드는 작업 수행
+        //col 0 가 끝나면
+        //row 2, col 1 에 기준점을 잡고 다시 시작
+        //row 2, col 1 을 포함해 col 1의 row 값들을 모두 0으로 만드는 작업 수행, 반복
+        for (int c = 0; c < column - 1; c++)
+        {
+            for (int r = c + 1; r < row; r++)//row 는 두번째 줄 부터 시작한다.
+            {
+                ReRowOfMat(ref mat, row, column, c, c);
+                if (mat[r, c] == 0.0f) { continue; }//0으로 만들어야 할 놈이 이미 0이라면 continue
+
+                float t = -mat[r, c] / mat[c, c];//곱해질 수
+                float[] l = new float[column];
+
+                for (int k = 0; k < column; k++)
+                {
+                    l[k] = mat[c, k] * t + mat[r, k];
+                }
+                for (int k = 0; k < column; k++)
+                {
+                    mat[r, k] = l[k];
+                }
+            }
+        }
+        for (int r = row - 1; r >= 0; --r)
+        {
+            float t = mat[r, column - 1];
+            for (int c = column - 2; c > r; --c)
+            {
+
+                t -= (mat[r, c] * ans[c]);
+            }
+            ans[r] = t / mat[r, r];
+        }
+        return ans;
+    }
+    private static bool ReRowOfMat(ref float[,] mat, int row, int col, int checkRow, int checkCol)
+    {
+        //divisor 가 0이 되면 안된다. 0이면 밑에 row 들을 검색해서 0이 아닌 row와 스위칭을 한다.
+        //false 리턴: row 재조정 없이 통과
+        //true 리턴 : row 재조정 된 것
+        float[] zeroRowValues = new float[col];//check point 값이 0인 row의 모든 값들을 임시로 담을 그릇
+
+        if (mat[checkRow, checkCol] == 0.0f)
+        {
+            for (int c = 0; c < col; ++c)
+            {
+                zeroRowValues[c] = mat[checkRow, c];
+            }
+
+            for (int r = checkRow + 1; r < row; ++r)
+            {
+                if (mat[r, checkCol] != 0.0f)
+                {
+                    for (int c = 0; c < col; ++c)
+                    {
+                        //스위칭
+                        mat[checkRow, c] = mat[r, c];
+                        mat[r, c] = zeroRowValues[c];
+                    }
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+        return false;
+    }
+
     public static void PositionLerp()
     {
         //float dist = Vector3.Distance(target.transform.position, transform.position);
@@ -765,52 +847,183 @@ public partial class Utility
         return p0Position;
     }
 
-    public static bool GetLineIntersection4Points2D(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, ref Vector2 p0)
+    public static bool LineIntersection2D(Vector2 p1, Vector2 v1, Vector2 p2, Vector2 v2, ref Vector2 p0)
     {
+        //p1을 지나는 벡터 v1 인 직선과 p2을 지나는 벡터 v2 인 직선의 교점을 구한다.
+
         //활용식
-        //x1 + t(x2 - x1) = x3 + s(x4 - x3)
-        //y1 + t(y2 - y1) = y3 + s(y4 - y3)
+        //x1 + a1 * t = x2 + a2 * s -> 교점의 x 좌표 
+        //y1 + b1 * t = y2 + b2 * s -> 교점의 y 좌표
 
-        //1식을 t에 대해서 정리 하면서 남는 s는 2식을 s에 대해서 정리된 식으로 대체
-        float t = ((p3.x - p1.x) * (p4.y - p3.y) + (p1.y - p3.y) * (p4.x - p3.x)) /
-                  ((p2.x - p1.x) * (p4.y - p3.y) + (p1.y - p2.y) * (p4.x - p3.x));
+        //1식을 s 에 대해서 정리하고, 이를 2식에 대힙한다. 그럼 t만 남게 되고 이를 t에 대해 정리한 식이 아래
+        //float t = (v2.y * (p1.x - p2.x) + v2.x * (p2.y - p1.y)) /
+        //          ((v2.x * v1.y) - (v1.x * v2.y));
+        //같지만 역의 방식으로 s만 남게하고 정리하면 아래식
+        //float s = (v1.y * (p1.x - p2.x) + v1.x * (p2.y - p1.y)) /
+        //          ((v2.x * v1.y) - (v1.x * v2.y));
 
+        //t 와 s 의 분모는 같음,
+        float under = (v2.x * v1.y) - (v1.x * v2.y);
+        if (under == 0.0f)//0이면, 두 직선이 평행
+        {
+            return false;
+        }
+
+        float t = (v2.y * (p1.x - p2.x) + v2.x * (p2.y - p1.y)) / under;
+        float s = (v1.y * (p1.x - p2.x) + v1.x * (p2.y - p1.y)) / under;
+
+        float x = p1.x + t * v1.x;
+        float y = p1.y + t * v1.y;
+
+        Vector2 pointIntersection = new Vector2(x, y);
+        p0 = pointIntersection;
+
+        return true;
+    }
+    public static bool LineIntersection2DWithGaussianElimination(Vector2 p1, Vector2 v1, Vector2 p2, Vector2 v2, ref Vector2 p0)
+    {
+        //p1을 지나는 벡터 v1 인 직선과 p2을 지나는 벡터 v2 인 직선의 교점을 구한다.
+
+        //활용식
+        //x1 + a1 * t = x2 + a2 * s -> 교점의 x 좌표 
+        //y1 + b1 * t = y2 + b2 * s -> 교점의 y 좌표
+
+        BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(v1.x, -v2.x, v1.y, -v2.y);
+        if (mat2x2.Determinant() == 0.0f)
+        {
+            return false;
+        }
+
+        float[,] mat = { { v1.x, -v2.x, p2.x - p1.x }, { v1.y, -v2.y, p2.y - p1.y } };
+        float[] ts = GaussianElimination(2, mat);
+
+        float x = p1.x + ts[0] * v1.x;
+        float y = p1.y + ts[0] * v1.y;
+
+        Vector2 pointIntersection = new Vector2(x, y);
+        p0 = pointIntersection;
+
+        return true;
+    }
+    public static bool LineSegmentIntersection2D(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, ref Vector2 p0)
+    {
+        //p1에서 p2 까지의 선분과 p3에서 p4 까지의 선분 의 교차점을 찾는다.
+
+        //활용식
+        // x1 * (1-t) + x2 * t = x3 * (1-s) + x4 * s -> 교점의 x 좌표 
+        // y1 * (1-t) + y2 * t = y3 * (1-s) + y4 * s -> 교점의 y 좌표
+
+        //1식을 s 에 대해서 정리하고, 이를 2식에 대힙한다. 그럼 t만 남게 되고 이를 t에 대해 정리한 식이 아래
+        //float t = ((p3.x - p1.x) * (p4.y - p3.y) + (p1.y - p3.y) * (p4.x - p3.x)) /
+        //          ((p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x));
+        //같지만 역의 방식으로 s만 남게하고 정리하면 아래식
         //float s = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) /
         //          ((p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x));
 
-        if (t > 1.0f || t < 0.0f)
+        //t 와 s 의 분모는 같음,
+        float under = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
+        if(under == 0.0f)//0이면, 두 직선이 평행
         {
-            return false;//두 선의 교점은 존재하지 않음
+            return false;
         }
 
-        float tParent = (p2.x - p1.x) * (p4.y - p3.y) + (p1.y - p2.y) * (p4.x - p3.x);
-        if (tParent == 0)
+        float t = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / under;
+        float s = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / under;
+        Debug.Log("t: " + t + "s: " + s);
+        if (t < 0.0f || t > 1.0f || s < 0.0f || s > 1.0f )//선분의 교점을 구하는 것임
         {
-            return false;//두 선은 평행
+            return false;//선분으로서의 교차점은 없음
         }
 
         float x = p1.x + t * (p2.x - p1.x);
         float y = p1.y + t * (p2.y - p1.y);
 
         Vector2 pointIntersection = new Vector2(x, y);
-
         p0 = pointIntersection;
 
         return true;
     }
-    public static bool GetLineIntersection4Points3D(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, ref Vector3 p0)
+    public static bool LineSegmentIntersection2DWithGaussianElimination(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, ref Vector2 p0)
     {
+        //p1에서 p2 까지의 선분과 p3에서 p4 까지의 선분 의 교차점을 찾는다.
+
+        //활용식
+        // x1 * (1-t) + x2 * t = x3 * (1-s) + x4 * s -> 교점의 x 좌표 
+        // y1 * (1-t) + y2 * t = y3 * (1-s) + y4 * s -> 교점의 y 좌표
+
+        BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(p2.x - p1.x, p4.x - p3.x, p2.y - p1.y, p4.y - p3.y);
+        if (mat2x2.Determinant() == 0.0f)
+        {
+            return false;
+        }
+
+        float[,] mat = { { p2.x - p1.x, p3.x - p4.x, p3.x - p1.x }, { p2.y - p1.y, p3.y - p4.y, p3.y - p1.y } };
+        float[] ts = GaussianElimination(2, mat);
+
+        Debug.Log("t: " + ts[0] + "s: " + ts[1]);
+        if (ts[0] < 0.0f || ts[0] > 1.0f || ts[1] < 0.0f || ts[1] > 1.0f)//선분의 교점을 구하는 것임
+        {
+            return false;//선분으로서의 교차점은 없음
+        }
+
+        float x = p1.x * (1 - ts[0]) + p2.x * ts[0];
+        float y = p1.y * (1 - ts[0]) + p2.y * ts[0];
+
+        Vector2 pointIntersection = new Vector2(x, y);
+        p0 = pointIntersection;
+
+        return true;
+    }
+    public static bool LineIntersection3D(Vector3 p1, Vector3 v1, Vector3 p2, Vector3 v2, ref Vector3 p0)
+    {
+        //p1을 지나는 벡터 v1 인 직선과 p2을 지나는 벡터 v2 인 직선의 교점을 구한다.
+
+        return true;
+    }
+    public static bool LineIntersection3DWithGaussianElimination(Vector3 p1, Vector3 v1, Vector3 p2, Vector3 v2, ref Vector3 p0)
+    {
+        //p1을 지나는 벡터 v1 인 직선과 p2을 지나는 벡터 v2 인 직선의 교점을 구한다.
+
+        //활용식
+        //x1 + a1 * t = x2 + a2 * s -> 교점의 x 좌표 
+        //y1 + b1 * t = y2 + b2 * s -> 교점의 y 좌표
+
+        //BKST.Matrix3x3 mat3x3 = new BKST.Matrix3x3(v1.x, -v2.x, v1.y, -v2.y);
+        //if (mat3x3.Determinant() == 0.0f)
+        //{
+        //    return false;
+        //}
+
+        //float[,] mat = { { v1.x, -v2.x, p2.x - p1.x }, { v1.y, -v2.y, p2.y - p1.y } };
+        //float[] ts = GaussianElimination(2, mat);
+
+        //float x = p1.x + ts[0] * v1.x;
+        //float y = p1.y + ts[0] * v1.y;
+
+        //Vector2 pointIntersection = new Vector2(x, y);
+        //p0 = pointIntersection;
 
 
         return true;
     }
-    public static bool GetLineIntersectionPointAndVector3D(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, ref Vector3 p0)
+    public static bool LineSegmentIntersection3D(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, ref Vector3 p0)
     {
-
+        //p1에서 p2 까지의 선분과 p3에서 p4 까지의 선분 의 교차점을 찾는다.
 
         return true;
     }
 
+    public static bool Vector3CrossOrthogonalCheck(Vector3 v1, Vector3 v2)
+    {
+        float dot = Vector3.Dot(v1.normalized, v2.normalized);
+        //Debug.Log(dot == 0.0f ? "true" : "false");
+        return dot == 0.0f ? true : false;
+    }
+    public static bool Vector3ParallelCheck(Vector3 v1, Vector3 v2)
+    {
+        //Debug.Log(v1.normalized == v2.normalized ? "true" : "false");
+        return v1.normalized == v2.normalized ? true : false;
+    }
 
 
     #endregion Math, Vector
