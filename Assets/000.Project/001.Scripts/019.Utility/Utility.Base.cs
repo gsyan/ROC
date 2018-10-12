@@ -889,7 +889,7 @@ public partial class Utility
         //y1 + b1 * t = y2 + b2 * s -> 교점의 y 좌표
 
         BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(v1.x, -v2.x, v1.y, -v2.y);
-        if (Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)
+        if (Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)//평행하면 무시, 해가 없거나 무수히 많은것
         {
             return false;
         }
@@ -952,7 +952,7 @@ public partial class Utility
         // y1 * (1-t) + y2 * t = y3 * (1-s) + y4 * s -> 교점의 y 좌표
 
         BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(p2.x - p1.x, p4.x - p3.x, p2.y - p1.y, p4.y - p3.y);
-        if ( Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)
+        if ( Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)//평행하면 무시, 해가 없거나 무수히 많은것
         {
             return false;
         }
@@ -995,27 +995,36 @@ public partial class Utility
     {
         //p1을 지나는 벡터 v1 인 직선과 p2을 지나는 벡터 v2 인 직선의 교점을 구한다.
 
-        //활용식
-        //x1 + a1 * t = x2 + a2 * s -> 교점의 x 좌표 
-        //y1 + b1 * t = y2 + b2 * s -> 교점의 y 좌표
+        bool bOnSamePlane = LinesOnSamePlane(p1, v1, p2, v2);
+        if (bOnSamePlane)
+        {
+            //활용식
+            //p1 + t * v1 = p2 + s * v2 => 교점
+            //x1 + a1 * t = x2 + a2 * s -> 교점의 x 좌표 
+            //y1 + b1 * t = y2 + b2 * s -> 교점의 y 좌표
 
-        //BKST.Matrix3x3 mat3x3 = new BKST.Matrix3x3(v1.x, -v2.x, v1.y, -v2.y);
-        //if (mat3x3.Determinant() == 0.0f)
-        //{
-        //    return false;
-        //}
+            BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(v1.x, -v2.x, v1.y, -v2.y);
+            if (Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)//평행하면 무시, 해가 없거나 무수히 많은것
+            {
+                //Debug.Log("determinet = 0");
+                return false;
+            }
 
-        //float[,] mat = { { v1.x, -v2.x, p2.x - p1.x }, { v1.y, -v2.y, p2.y - p1.y } };
-        //float[] ts = GaussianElimination(2, mat);
+            float[,] mat = { { v1.x, -v2.x, p2.x - p1.x }, { v1.y, -v2.y, p2.y - p1.y } };
+            float[] ts = GaussianElimination(2, mat);
 
-        //float x = p1.x + ts[0] * v1.x;
-        //float y = p1.y + ts[0] * v1.y;
+            float x = p1.x + ts[0] * v1.x;
+            float y = p1.y + ts[0] * v1.y;
 
-        //Vector2 pointIntersection = new Vector2(x, y);
-        //p0 = pointIntersection;
+            Vector2 pointIntersection = new Vector2(x, y);
+            p0 = pointIntersection;
 
-
-        return true;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     public static bool LineSegmentIntersection3D(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, ref Vector3 p0)
     {
@@ -1023,7 +1032,66 @@ public partial class Utility
 
         return true;
     }
+    public static bool LineSegmentIntersection3DWithGaussianElimination(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, ref Vector3 p0)
+    {
+        //p1에서 p2 까지의 선분과 p3에서 p4 까지의 선분 의 교차점을 찾는다.
 
+        bool bOnSamePlane = LineSegmentsOnSamePlane(p1, p2, p3, p4);
+        if (bOnSamePlane)
+        {
+            //활용식
+            // x1 * (1-t) + x2 * t = x3 * (1-s) + x4 * s -> 교점의 x 좌표 
+            // y1 * (1-t) + y2 * t = y3 * (1-s) + y4 * s -> 교점의 y 좌표
+
+            BKST.Matrix2x2 mat2x2 = new BKST.Matrix2x2(p2.x - p1.x, p4.x - p3.x, p2.y - p1.y, p4.y - p3.y);
+            if (Mathf.Abs(mat2x2.Determinant()) < float.Epsilon)//평행하면 무시, 해가 없거나 무수히 많은것
+            {
+                return false;
+            }
+
+            float[,] mat = { { p2.x - p1.x, p3.x - p4.x, p3.x - p1.x }, { p2.y - p1.y, p3.y - p4.y, p3.y - p1.y } };
+            float[] ts = GaussianElimination(2, mat);
+
+            //Debug.Log("t: " + ts[0] + "s: " + ts[1]);
+            if (ts[0] < 0.0f || ts[0] > 1.0f || ts[1] < 0.0f || ts[1] > 1.0f)//선분의 교점을 구하는 것임
+            {
+                return false;//선분으로서의 교차점은 없음
+            }
+
+            float x = p1.x * (1 - ts[0]) + p2.x * ts[0];
+            float y = p1.y * (1 - ts[0]) + p2.y * ts[0];
+
+            Vector2 pointIntersection = new Vector2(x, y);
+            p0 = pointIntersection;
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public static bool LinesOnSamePlane(Vector3 p1, Vector3 v1, Vector3 p2, Vector3 v2)
+    {
+        Vector3 pN = Vector3.Cross(v1, v2);//평면의 법선 벡터
+        Debug.DrawLine(p1, p1 + pN, Color.red);
+        Vector3 p = p2;//p2가 p1과 pN에 의해 산출된 평면 위에 있는지를 검사한다.
+        float planeEquationValue = pN.x * p.x + pN.y * p.y + pN.z * p.z - pN.x * p1.x - pN.y * p1.y - pN.z * p1.z;
+        if (Mathf.Abs(planeEquationValue) < float.Epsilon)//0이면 평면 위에 있다.
+        {
+            //Debug.Log("LinesOnSamePlane");
+            return true;
+        }
+        //Debug.Log("LinesOnDifferPlane");
+        return false;
+    }
+    public static bool LineSegmentsOnSamePlane(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
+    {
+        Vector3 v1 = p2 - p1;
+        Vector3 v2 = p4 - p3;
+        return LinesOnSamePlane(p1, v1, p3, v2);
+    }
     public static bool Vector3CrossOrthogonalCheck(Vector3 v1, Vector3 v2)
     {
         float dot = Vector3.Dot(v1.normalized, v2.normalized);
