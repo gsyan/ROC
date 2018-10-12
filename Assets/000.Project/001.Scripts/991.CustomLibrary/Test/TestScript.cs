@@ -20,13 +20,15 @@ public class TestScript : MonoBehaviour
 
     void Start()
     {
-
+        //cdn.jsdeliver.net/abaaso/3.10/abaaso.min.js
+        //cdn.jsdeliver.net/abaaso/3/abaaso.min.js
+        //cdn.jsdeliver.net/abaaso/latest/abaaso.min.js
     }
 
-        
 
-    
-	void Update ()
+
+
+    void Update ()
     {
         
     }

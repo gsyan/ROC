@@ -1,0 +1,31 @@
+git 커맨드 및 사용 방법 정리
+
+
+
+# Tag	--------------------------------------------------------------------------------------------
+1. 붙이기
+git tag v0.0.1 -> Lightweight tag ( 특정 커밋을 가르키는 역할만 )
+git tag -a v0.0.1 -m"Release version 1.0.3" -> Annotated ( 태그를 만든 사람, 이메일, 날짜, 메시지를 저장 )
+
+이전 커밋에 붙여야 할 경우 커밋 해쉬 추가
+git tag v0.0.1 [SHA-1 hash]
+git tag -a v0.0.1 -m"Release version 1.0.3" [SHA-1 hash]
+
+2. 존재하는 tag 조회
+git tag
+git tag -l v0.0.* ( 조건 검색 )
+
+3. 내용 확인
+git show v0.0.1
+
+
+4.원격 저장소에 적용
+git push origin v0.0.1
+git push origin --tags ( 모든 태그 올리기 )
+
+
+5. 삭제
+git tag -d v0.0.1 ( local commit 에서 삭제 )
+git push origin :v0.0.1 ( 원격 저장소 에서 삭제 )
+
+
