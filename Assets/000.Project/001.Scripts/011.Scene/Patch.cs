@@ -48,7 +48,7 @@ public class Patch : MonoBehaviour
 #if UNITY_EDITOR
         ResourceSystem.useAssetBundle = true;
 #endif
-
+        //http://ga.cdn.3rdeyesys.com/guardian_arena/roc/patch/android_test/1/server_condition.json
         address = "http://ga.cdn.3rdeyesys.com/guardian_arena/roc/patch/";
         SetFilePath();
 
