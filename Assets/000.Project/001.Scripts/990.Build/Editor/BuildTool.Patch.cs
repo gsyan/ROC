@@ -13,21 +13,21 @@ public partial class BuildTool : EditorWindow
     {
         GUILayout.Space(10);
 
-        // MIN APPLICATION VERSION
-        string minApplicationVersion = PlayerPrefs.GetString("min_application_version", Application.version);
-        minApplicationVersion = EditorGUILayout.TextField("Min Application Version", minApplicationVersion);
-        PlayerPrefs.SetString("min_application_version", minApplicationVersion);
+        //APPLICATION VERSION
+        string version_App = PlayerPrefsManager.Instance.App_Version;
+        version_App = EditorGUILayout.TextField("app_version", version_App);
+        PlayerPrefsManager.Instance.App_Version = version_App;
 
-        // MIN PATCH VERSION
-        int minPatchVersion = PlayerPrefs.GetInt("min_patch_version", 1);
-        minPatchVersion = EditorGUILayout.IntField("Min Patch Version", minPatchVersion);
-        PlayerPrefs.SetInt("min_patch_version", minPatchVersion);
-        
-        // PATCH VERSION
+        //PATCH VERSION
         int patchVersion = PlayerPrefs.GetInt("patch_version", 1);
-        patchVersion = EditorGUILayout.IntField("Patch Version", patchVersion);
+        patchVersion = EditorGUILayout.IntField("patch_version", patchVersion);
         PlayerPrefs.SetInt("patch_version", patchVersion);
 
+        //MIN PATCH VERSION
+        int minPatchVersion = PlayerPrefs.GetInt("min_patch_version", 1);
+        minPatchVersion = EditorGUILayout.IntField("min_patch_version", minPatchVersion);
+        PlayerPrefs.SetInt("min_patch_version", minPatchVersion);
+        
         // BUTTON BUILD
         if (GUILayout.Button("Build AssetBundle"))
         {
@@ -37,11 +37,11 @@ public partial class BuildTool : EditorWindow
         // BUTTON PATCH
         if (GUILayout.Button("Make Patch"))
         {
-            MakePatch(minApplicationVersion, minPatchVersion, patchVersion);
+            MakePatch(version_App, minPatchVersion, patchVersion);
         }
         
     }
-
+    
     void Build(int patchVersion)
     {
         try
@@ -250,6 +250,8 @@ public partial class BuildTool : EditorWindow
                     buildFiles.Add(customAssetBundleNames[i], assetNameList);
                 }
             }
+
+
             // 커스텀 에셋번들이름을 차감한 includeFiles 를 바탕으로
             // buildFiles 내용 추가
             fCount = includeFiles.Count;
@@ -287,7 +289,7 @@ public partial class BuildTool : EditorWindow
 
                 if( assetNames.Length > 1 )
                 {
-                    //Logger.Write(assetNames, "[combine] ");
+                    Logger.Write(assetNames, "[combine] ");
                 }
 
                 index++;
@@ -296,7 +298,7 @@ public partial class BuildTool : EditorWindow
             // unusedAsset 목록 로그 남기기
             if ( unusedAssets.Count > 0 )
             {
-                //Logger.Write(unusedAssets.ToArray(), "[unused] ");
+                Logger.Write(unusedAssets.ToArray(), "[unused] ");
             }
 
             // 빌드 폴더 없으면 생성
@@ -363,11 +365,11 @@ public partial class BuildTool : EditorWindow
         }
     }
 
-    void MakePatch(string minApplicationVersion, int minPatchVersion, int targetVersion)
+    void MakePatch(string version_App, int minPatchVersion, int targetVersion)
     {
         try
         {
-            //Logger.Initialize(string.Format("{0}/android/log/patch_{1}.txt", _rootDir, DateTime.Now.ToString("yyyyMMddHHmmss")));
+            Logger.Initialize(string.Format("{0}/android/log/patch_{1}.txt", _rootDir, DateTime.Now.ToString("yyyyMMddHHmmss")));
 
             string androidDir = _rootDir + "/android";
             string assetbundleDir = androidDir + "/assetbundle";
@@ -419,10 +421,10 @@ public partial class BuildTool : EditorWindow
                 return;
             }
 
-            //Logger.Write(string.Format("START MAKE PATCH {0} to {1}", 0, targetVersion));
-            //Logger.Write(assetbundleManifestAllFiles, "[+] ");
-            //Logger.Write("END MAKE PATCH");
-            //Logger.WriteSpace();
+            Logger.Write(string.Format("START MAKE PATCH {0} to {1}", 0.ToString(), targetVersion));
+            Logger.Write(assetbundleManifestAllFiles, "[+] ");
+            Logger.Write("END MAKE PATCH");
+            Logger.WriteSpace();
 
             //Make Full version zip and CRC
             List<string> assetBundleList = new List<string>();
@@ -488,13 +490,13 @@ public partial class BuildTool : EditorWindow
                     }
                 }
 
-                //Logger.WriteSpace();
-                //Logger.Write(string.Format("START MAKE PATCH {0} TO {1}", oldVersion, targetVersion));
-                //Logger.Write(addList.ToArray(), "[+] ");
-                //Logger.Write(modifyList.ToArray(), "[!] ");
-                //Logger.Write(removeList.ToArray(), "[-] ");
-                //Logger.Write("END MAKE PATCH");
-                //Logger.WriteSpace();
+                Logger.WriteSpace();
+                Logger.Write(string.Format("START MAKE PATCH {0} TO {1}", oldVersion, targetVersion));
+                Logger.Write(addList.ToArray(), "[+] ");
+                Logger.Write(modifyList.ToArray(), "[!] ");
+                Logger.Write(removeList.ToArray(), "[-] ");
+                Logger.Write("END MAKE PATCH");
+                Logger.WriteSpace();
 
                 assetBundleList.Add("assetbundle");
                 assetBundleList.AddRange(addList);
@@ -520,19 +522,22 @@ public partial class BuildTool : EditorWindow
 
             // write server condition
             ServerCondition serverCondition = new ServerCondition();
+            serverCondition.app_version = version_App;
+            serverCondition.patch_version = targetVersion;
+            serverCondition.min_patch_version = minPatchVersion;
+
             serverCondition.is_opened = true;
             serverCondition.is_regular = true;
             serverCondition.close_hour = 0;
             serverCondition.close_minute = 0;
             serverCondition.open_hour = 0;
             serverCondition.open_minute = 0;
-            serverCondition.min_application_version = minApplicationVersion;
-            serverCondition.min_patch_version = minPatchVersion;
-            serverCondition.patch_version = targetVersion;
-            serverCondition.application_download_url = "";
-            serverCondition.nstore_download_url = "";
+
             serverCondition.playstore_download_url = "market://details?id=com.bkst.roc";
+            serverCondition.nstore_download_url = "";
             serverCondition.onestore_download_url = "";//http://onesto.re/0000723853
+            serverCondition.application_download_url = "";
+            
             serverCondition.tester_app_version = "";
 
             //register tester by somthing infomation

@@ -32,6 +32,19 @@ public class PlayerPrefsManager
         }
     }
 
+    public string App_Version
+    {
+        set
+        {
+            PlayerPrefs.SetString("app_version", value);
+        }
+        get
+        {
+            return PlayerPrefs.GetString("app_version", Application.version);
+        }
+    }
+
+
 
     /// <summary>
     /// "NOTICE_BANNER_ID_{id}" 형태의 문자열 만들어 줌

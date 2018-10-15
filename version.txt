@@ -1,0 +1,17 @@
+
+SemVer ( semantic versioning )
+
+버전의 형식은 [Major].[Minor].[Patch] 형식으로 한다.
+Major : 1~2년 주기의 큰 변화
+Minor : application 재설치
+Patch : 패치 파일 버전
+
+
+1.0.1 부터 시작
+player settings -> other settings -> Version 	= 1.0
+ROC -> build -> PATCH -> app_version 	= 1.0
+ROC -> build -> PATCH -> patch_version 	= 1
+ROC -> build -> PATCH -> min_patch_version 	= 1
+
+
+

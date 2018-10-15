@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class ServerCondition
 {
-    public string min_application_version = "";
-    public int min_patch_version;
+    public string app_version = "";
     public int patch_version;
-
+    public int min_patch_version;
+    
     public bool is_opened;
     public bool is_regular;
     public int close_hour;

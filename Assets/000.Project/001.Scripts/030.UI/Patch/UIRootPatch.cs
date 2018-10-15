@@ -40,7 +40,16 @@ public class UIRootPatch : MonoBehaviour
         _labelPercent.text = string.Format("{0:0.0} %", percent * 100.0f);
         _labelCount.text = string.Format("{0:0.0} / {1:0.0} MB", readByte / 1048576.0f, totalByte / 1048576.0f);
     }
-    
+    public void UpdateDownloadProgress(float progress, int totalByte)
+    {
+        float readByte = (float)totalByte * progress;
+
+        _spriteProgress.fillAmount = progress;
+        _labelPercent.text = string.Format("{0:0.0} %", progress * 100.0f);
+        _labelCount.text = string.Format("{0:0.0} / {1:0.0} MB", readByte / 1048576.0f, totalByte / 1048576.0f);
+    }
+
+
     public void UpdateExtractProgress(int current, int total)
     {
         float percent = (float)current / (float)total;

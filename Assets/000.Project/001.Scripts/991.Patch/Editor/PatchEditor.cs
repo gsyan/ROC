@@ -22,6 +22,7 @@ public class PatchEditor : Editor
         if (script != null)
         {
             script.urlType = (Patch.URLType)EditorGUILayout.EnumPopup("URL Type", script.urlType);//"URL Type" 인스팩터창의 항목 이름
+            
             switch (script.urlType)
             {
                 case Patch.URLType.Local:
@@ -44,11 +45,15 @@ public class PatchEditor : Editor
                     
                     break;
                 case Patch.URLType.Dev:
-                    //script.address = "http://192.168.0.21/BlackNight_FTP/";
-                    //script.address = "http://volthole2.iptime.org:10011/patch/";
-                    //address = "http://192.168.0.14:10011/patch/";//내부용
-                    //address = "http://vrive.cdn3.cafe24.com/guardian_arena/patch/";//볼트홀 소유 외부용
-                    script.address = "http://ga.cdn.3rdeyesys.com/guardian_arena/roc/patch/";
+                    script.version = EditorGUILayout.TextField("Version", script.version);
+                    if (string.IsNullOrEmpty(script.version))
+                    {
+                        script.address = "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch/patch/";
+                    }
+                    else
+                    {
+                        script.address = "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch@" + script.version +"/patch/";
+                    }
                     script.filePath = "android_test/";
                     EditorGUILayout.LabelField("Address", script.address);
                     EditorGUILayout.LabelField("FilePath", script.filePath);
