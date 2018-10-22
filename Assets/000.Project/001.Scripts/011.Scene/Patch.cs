@@ -168,190 +168,35 @@ public class Patch : MonoBehaviour
         try
         {
             // check application version
+            int[] clientAppVersions = null;
+            CheckClientAppVersion(ref clientAppVersions);
+
+            //minAppVersions(서버에서받은 server_condition.json)
+            int[] serverAppVersions = null;
+            CheckServerAppVersion(serverCondition, ref serverAppVersions);
+
             // bk, clientAppVersions(unity project settings) 과 minAppVersions(서버에서받은 server_condition.json) 비교
             // 서버에서받은 데이터의 min_application_version 버전보다 낮으면 
             // 앱 스토어에 새 버전이 있음을 UI로 알리고, 유저가 확인하면 해당 마켓으로 리다이랙션 및 앱 종료,
-            // 서버컨디션의 min_application_version 버전을 조절 함으로서 기존 유저들의 게임 가능 여부를 조절 할 수 있다.
-            int[] clientAppVersions = ConvertVersion(Application.version);
-            if (clientAppVersions == null)
-            {
-                throw new Exception("invalid_client_application_version");
-            }
-
-            //minAppVersions(서버에서받은 server_condition.json)
-            int[] serverAppVersions = ConvertVersion(serverCondition.app_version);
-            DLog.LogMSG("PatchServer AppVersion: " + serverCondition.app_version);
-            if (serverAppVersions == null)
-            {
-                throw new Exception("invalid_server_application_version");
-            }
-            string path = "";//각종 스트링 값을 보기 위해서 설정
-            //버전 체크
-            for (int i = 0; i < 2; i++)
-            {
-                if (clientAppVersions[i] > serverAppVersions[i])//클라 버전이 패치서버 버전보다 높을 경우
-                {
-                    break;//빌드 버전이 낮지 않음을 확인했으니 오케이 다음으로.
-                }
-                else if (clientAppVersions[i] < serverAppVersions[i])//클라 버전이 패치서버 버전 낮을 경우
-                {
-                    Callback callback = delegate ()
-                    {
-#if UNITY_ANDROID
-#if BILLING_UNITY
-                        Application.OpenURL(serverCondition.playstore_download_url);
-#elif BILLING_NSTORE
-                        Application.OpenURL(serverCondition.nstore_download_url);
-#endif
-#endif
-                        Application.Quit();
-                    };
-
-                    // 앱 스토어에 새 버전이 있음을 UI로 알리고, 유저가 확인하면 해당 마켓으로 리다이랙션 및 앱 종료,
-                    _patchUI.ShowMessageBoxOK(Localization.Get("notice_new_application"), callback, callback);
-                    return;
-                }
-            }
+            CheckUpdateApp(clientAppVersions, serverAppVersions, serverCondition);
 
             GInfo.serverType = serverCondition.server_type;
             GInfo.serverGroup = serverCondition.server_group;
 
-            // check server condition ==========================================================================
-            bool isTester = false;
+            // check test app version || tester GAID  ==========================================================================
+            bool isTester = CheckIsTestAppVersion(clientAppVersions, serverCondition);
+            isTester = CheckIsTesterGAID(isTester, serverCondition);
 
-            if (!string.IsNullOrEmpty(serverCondition.tester_app_version))
-            {
-                isTester = true;
+            //check server inspection
+            CheckServerInspection(isTester, serverCondition);
 
-                int[] testerAppVersions = ConvertVersion(serverCondition.tester_app_version);
-                NativeBK.LogMSG("PatchServer testerAppVersions: " + serverCondition.tester_app_version);
-                for (int i = 0; i < 2; i++)
-                {
-                    if (clientAppVersions[i] < testerAppVersions[i])//주의 testerAppVersions 과 같은 버전의 클라이언트는 테스터가 됨
-                    {
-                        isTester = false;
-                    }
-                }
-            }
-
-            if (!isTester)
-            {
-                //NativeBK.SetGAID("e099125a-4097-4af9-af5b-0154cb92e4ad");//인위적으로 등록된 테스터의 광고아이디 삽입
-                for (int i = 0; i < serverCondition.tester.Length; ++i)
-                {
-                    if (string.Compare(serverCondition.tester[i], NativeBK.GAID) == 0)
-                    {
-                        isTester = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (!isTester && !serverCondition.is_opened)
-            {
-                if (serverCondition.is_regular)//정기점검
-                {
-                    if (serverCondition.close_hour == -1)//close_hour 가 -1 이면 시간을 표기하지 않는다.
-                    {
-                        throw new Exception("notice_inspect");
-                    }
-                    else
-                    {
-                        throw new Exception("notice_regular_inspect");
-                    }
-
-                }
-                else//임시정검
-                {
-                    if (serverCondition.close_hour == -1)
-                    {
-                        throw new Exception("notice_inspect");
-                    }
-                    else
-                    {
-                        throw new Exception("notice_temporary_inspect");
-                    }
-                }
-            }
-
-#if UNITY_EDITOR || USE_ASSET_BUNDLE
-            // check patch version ==============================================================================
-            int clientPatch = ReadFileValue(_versionFilePath, 0);
-            DLog.LogMSG("client_patch: " + clientPatch);
-            DLog.LogMSG("server_patch: " + serverCondition.patch_version);
-            // clientPatchVersion 이 0이 아니라면 패치를 받은 상태인것, 0이면 설치후 한번도 패치받지 않은것
-            if (clientPatch > 0)//한번이라도 패치받은 경우
-            {
-                if (clientPatch < serverCondition.min_patch_version)
-                {
-                    // 최소 패치 버전보다 낮다면 1을 받는다.
-                    clientPatch = 1;
-                }
-
-                if (clientPatch > serverCondition.patch_version)
-                {
-                    // 클라이언트 패치 버전이 이상함으로 모든 패치 파일을 다시 받고 버전을 갱신한다.
-                    clientPatch = 0;
-                }
-            }
-
-            // 다운로드 시작
-            if (clientPatch < serverCondition.patch_version)
-            {
-                //Callback callback = delegate ()
-                //{ //패치가 있으니 받겠냐는 버튼에 오케이 하면 호출
-                //    _patchUI.StartLoopImage();
-                //    StartCoroutine(ExtractPatchFile(clientPatch, serverCondition.patch_version));
-                //};
-
-                //HttpWebResponse response = null;
-                //try
-                //{
-                //    path = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverCondition.patch_version, clientPatch);
-                //    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(path);
-                //    request.Method = "HEAD";
-                //    response = (HttpWebResponse)(request.GetResponse());
-                //}
-                //catch (WebException e)
-                //{
-                //    DLog.LogMSG(string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverCondition.patch_version, clientPatch) + " doesn't exist: " + e.Message);
-                //}
-
-                //if (response != null)
-                //{
-                //    //패치 확인 창 x 버튼 클릭시 패치가 받아지는 문제로 인해 callback 에 null을 넣는 것으로 수정, bk
-                //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callback, null);
-                //}
-                //else
-                //{
-                //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), "", callback, callback));
-                //}
-
-
-                StartCoroutine(DownloadFileHead(clientPatch, serverCondition.patch_version));
-                
-
-
-
-
-
-
-            }
-#endif
-            else
-            {
-#if UNITY_EDITOR || USE_ASSET_BUNDLE
-                GInfo.patchVersion = clientPatch;
-#endif
-                _patchUI.SetStateText(Localization.Get("lastest_version"));
-                _patchUI.ClearProgress();
-
-                // 로그인 씬으로 이동
-                StartCoroutine(LoadingLevel());
-            }
+            //check patch version
+            CheckPatchVersion(serverCondition);
         }
         catch (Exception e)
         {
+            Debug.Log(e);
+
             Callback callback = delegate ()
             {
                 Application.Quit();
@@ -360,6 +205,199 @@ public class Patch : MonoBehaviour
             _patchUI.ShowMessageBoxOK(Localization.Get(e.Message), callback, callback);
         }
     }
+    private void CheckClientAppVersion(ref int[] clientAppVersions)
+    {
+        clientAppVersions = ConvertVersion(Application.version);
+        clientAppVersions = null;
+        if (clientAppVersions == null)
+        {
+            throw new Exception("invalid_client_app_version");
+        }
+    }
+    private void CheckServerAppVersion(ServerCondition serverCondition, ref int[] serverAppVersions)
+    {
+        serverAppVersions = ConvertVersion(serverCondition.app_version);
+        //DLog.LogMSG("PatchServer AppVersion: " + serverCondition.app_version);
+        if (serverAppVersions == null)
+        {
+            throw new Exception("invalid_server_app_version");
+        }
+    }
+    private void CheckUpdateApp(int[] clientAppVersions, int[] serverAppVersions, ServerCondition serverCondition)
+    {
+        //버전 체크
+        for (int i = 0; i < 2; i++)
+        {
+            if (clientAppVersions[i] > serverAppVersions[i])//클라 버전이 패치서버 버전보다 높을 경우
+            {
+                break;//빌드 버전이 낮지 않음을 확인했으니 오케이 다음으로.
+            }
+            else if (clientAppVersions[i] < serverAppVersions[i])//클라 버전이 패치서버 버전 낮을 경우
+            {
+                Callback callback = delegate ()
+                {
+#if UNITY_ANDROID
+#if BILLING_UNITY
+                    Application.OpenURL(serverCondition.playstore_download_url);
+#elif BILLING_NSTORE
+                        Application.OpenURL(serverCondition.nstore_download_url);
+#endif
+#endif
+                    Application.Quit();
+                };
+
+                // 앱 스토어에 새 버전이 있음을 UI로 알리고, 유저가 확인하면 해당 마켓으로 리다이랙션 및 앱 종료,
+                _patchUI.ShowMessageBoxOK(Localization.Get("notice_new_application"), callback, callback);
+                return;
+            }
+        }
+    }
+    private bool CheckIsTestAppVersion(int[] clientAppVersions, ServerCondition serverCondition)
+    {
+        if (!string.IsNullOrEmpty(serverCondition.tester_app_version))
+        {
+            int[] testerAppVersions = ConvertVersion(serverCondition.tester_app_version);
+            //NativeBK.LogMSG("PatchServer testerAppVersions: " + serverCondition.tester_app_version);
+            for (int i = 0; i < 2; i++)
+            {
+                if (clientAppVersions[i] < testerAppVersions[i])//주의 testerAppVersions 과 같은 버전의 클라이언트는 테스터가 됨
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+    private bool CheckIsTesterGAID(bool isTester, ServerCondition serverCondition)
+    {
+        if (!isTester)
+        {
+            //NativeBK.SetGAID("e099125a-4097-4af9-af5b-0154cb92e4ad");//인위적으로 등록된 테스터의 광고아이디 삽입
+            for (int i = 0; i < serverCondition.tester.Length; ++i)
+            {
+                if (string.Compare(serverCondition.tester[i], NativeBK.GAID) == 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+    private void CheckServerInspection(bool isTester, ServerCondition serverCondition)
+    {
+        if (!isTester && !serverCondition.is_opened)
+        {
+            if (serverCondition.is_regular)//정기점검
+            {
+                if (serverCondition.close_hour == -1)//close_hour 가 -1 이면 시간을 표기하지 않는다.
+                {
+                    throw new Exception("notice_inspect");
+                }
+                else
+                {
+                    throw new Exception("notice_regular_inspect");
+                }
+
+            }
+            else//임시정검
+            {
+                if (serverCondition.close_hour == -1)
+                {
+                    throw new Exception("notice_inspect");
+                }
+                else
+                {
+                    throw new Exception("notice_temporary_inspect");
+                }
+            }
+        }
+    }
+    private void CheckPatchVersion(ServerCondition serverCondition)
+    {
+#if !UNITY_EDITOR && !USE_ASSET_BUNDLE
+        return;
+#endif
+        int clientPatch = ReadFileValue(_versionFilePath, 0);
+        //DLog.LogMSG("client_patch: " + clientPatch);
+        //DLog.LogMSG("server_patch: " + serverCondition.patch_version);
+
+        // clientPatchVersion 이 0이 아니라면 패치를 받은 상태인것, 0이면 설치후 한번도 패치받지 않은것
+        if (clientPatch > 0)//한번이라도 패치받은 경우
+        {
+            if (clientPatch < serverCondition.min_patch_version)
+            {
+                // 최소 패치 버전보다 낮다면 1을 받는다.
+                clientPatch = 1;
+            }
+
+            if (clientPatch > serverCondition.patch_version)
+            {
+                // 클라이언트 패치 버전이 이상함으로 모든 패치 파일을 다시 받고 버전을 갱신한다.
+                clientPatch = 0;
+            }
+        }
+
+        // 다운로드 해야 하는 상황
+        if (clientPatch < serverCondition.patch_version)
+        {
+            //Callback callback = delegate ()
+            //{ //패치가 있으니 받겠냐는 버튼에 오케이 하면 호출
+            //    _patchUI.StartLoopImage();
+            //    StartCoroutine(ExtractPatchFile(clientPatch, serverCondition.patch_version));
+            //};
+
+            //HttpWebResponse response = null;
+            //try
+            //{
+            //    path = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverCondition.patch_version, clientPatch);
+            //    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(path);
+            //    request.Method = "HEAD";
+            //    response = (HttpWebResponse)(request.GetResponse());
+            //}
+            //catch (WebException e)
+            //{
+            //    DLog.LogMSG(string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverCondition.patch_version, clientPatch) + " doesn't exist: " + e.Message);
+            //}
+
+            //if (response != null)
+            //{
+            //    //패치 확인 창 x 버튼 클릭시 패치가 받아지는 문제로 인해 callback 에 null을 넣는 것으로 수정, bk
+            //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callback, null);
+            //}
+            //else
+            //{
+            //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), "", callback, callback));
+            //}
+
+
+            StartCoroutine(DownloadFileHead(clientPatch, serverCondition.patch_version));
+
+
+
+
+
+
+
+        }
+
+        else
+        {
+#if UNITY_EDITOR || USE_ASSET_BUNDLE
+            GInfo.patchVersion = clientPatch;
+#endif
+            _patchUI.SetStateText(Localization.Get("lastest_version"));
+            _patchUI.ClearProgress();
+
+            // 로그인 씬으로 이동
+            StartCoroutine(LoadingLevel());
+        }
+    }
+
+
+
 
     IEnumerator DownloadFileHead(int currentVersion, int targetVersion)
     {
