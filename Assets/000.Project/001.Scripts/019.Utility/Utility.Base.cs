@@ -1119,7 +1119,9 @@ public partial class Utility
         //str.IndexOf();
         //str.LastIndexOf();
         //str.Substring(4,8);, str.Substring(4);
+        //string[] s = str.split('.')
     }
+
     #endregion String Function
 
     #region Application System

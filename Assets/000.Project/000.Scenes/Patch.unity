@@ -665,9 +665,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   urlType: 1
-  address: https://cdn.jsdelivr.net/gh/gsyan/ROCPatch@v1.0.3/patch/
-  version: v1.0.3
-  filePath: android_test/
+  address: https://cdn.jsdelivr.net/gh/gsyan/ROCPatch
+  bVersion: 1
+  verion: '@v0.0'
+  patchVersion: 2
+  filePath: /patch/android_test/
 --- !u!1001 &755114680
 Prefab:
   m_ObjectHideFlags: 0
@@ -766,6 +768,10 @@ Prefab:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1116936750267830, guid: 6b2f186d0f11abd4db517391787f4846, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1969359424682274, guid: 6b2f186d0f11abd4db517391787f4846, type: 2}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}

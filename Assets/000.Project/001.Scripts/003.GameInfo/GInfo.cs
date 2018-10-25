@@ -14,7 +14,7 @@ public class GInfo
 {
     public static ServerType serverType;    //개발, 사용, 등등 인지 구분
     public static int serverGroup = 0;      //이건 ?
-    public static int patchVersion = 0;     //패치 버전 0 부터 1, 2, 3, ....
+    public static int patchNumber = 0;     //패치 버전 0 부터 1, 2, 3, ....
 
 
     //time

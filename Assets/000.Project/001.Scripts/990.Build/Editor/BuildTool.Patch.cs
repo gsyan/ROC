@@ -13,42 +13,52 @@ public partial class BuildTool : EditorWindow
     {
         GUILayout.Space(10);
 
+        EditorGUILayout.BeginHorizontal();
         //APPLICATION VERSION
-        string version_App = PlayerPrefsManager.Instance.App_Version;
-        version_App = EditorGUILayout.TextField("app_version", version_App);
-        PlayerPrefsManager.Instance.App_Version = version_App;
+        string app_version = Application.version;
+        EditorGUILayout.LabelField("app_version", app_version);
+        //PATCH NUMBER
+        int patchNumber = PlayerPrefs.GetInt("patch_number", 1);
+        patchNumber = EditorGUILayout.IntField("patch_number", patchNumber);
+        PlayerPrefs.SetInt("patch_number", patchNumber);
+        EditorGUILayout.EndHorizontal();
 
-        //PATCH VERSION
-        int patchVersion = PlayerPrefs.GetInt("patch_version", 1);
-        patchVersion = EditorGUILayout.IntField("patch_version", patchVersion);
-        PlayerPrefs.SetInt("patch_version", patchVersion);
 
+        EditorGUILayout.BeginHorizontal();
+        //MIN APPLICATION VERSION
+        string min_version = PlayerPrefs.GetString("min_app_version", "0.0");
+        min_version = EditorGUILayout.TextField("min_version", min_version);
+        PlayerPrefs.SetString("min_app_version", min_version);
         //MIN PATCH VERSION
-        int minPatchVersion = PlayerPrefs.GetInt("min_patch_version", 1);
-        minPatchVersion = EditorGUILayout.IntField("min_patch_version", minPatchVersion);
-        PlayerPrefs.SetInt("min_patch_version", minPatchVersion);
+        int minPatchNumber = PlayerPrefs.GetInt("min_patch_number", 1);
+        minPatchNumber = EditorGUILayout.IntField("min_patch_number", minPatchNumber);
+        PlayerPrefs.SetInt("min_patch_number", minPatchNumber);
+        EditorGUILayout.EndHorizontal();
+                
         
         // BUTTON BUILD
         if (GUILayout.Button("Build AssetBundle"))
         {
-            Build(patchVersion);
+            Build(app_version, patchNumber);
         }
 
         // BUTTON PATCH
         if (GUILayout.Button("Make Patch"))
         {
-            MakePatch(version_App, minPatchVersion, patchVersion);
+            MakePatch(app_version, patchNumber, min_version, minPatchNumber);
         }
         
     }
     
-    void Build(int patchVersion)
+    void Build(string appVersion, int patchNumber)
     {
         try
         {
+            patchNumber = RemakePatchNumber(appVersion, patchNumber);
+
             string assetbundleDir = _rootDir + "/android/assetbundle";
             string manifestDir = _rootDir + "/android/manifest";
-            string manifestPath = string.Format("{0}/{1}.manifest", manifestDir, patchVersion);
+            string manifestPath = string.Format("{0}/{1}.manifest", manifestDir, patchNumber);
             
             List<string> resourcesSelected = new List<string>();//리소스 폴더에 내에, ".meta", ".cs", ".js", ".xlsm", ".shader" 확장자명이 아니고, csv 폴더에 있지 않은 것들
             List<string> includeFiles = new List<string>();//dependency 파일 중 제외확장자 제외, launcher resource 폴더 내 파일 제외, 그 외 모두 포함
@@ -365,7 +375,7 @@ public partial class BuildTool : EditorWindow
         }
     }
 
-    void MakePatch(string version_App, int minPatchVersion, int targetVersion)
+    void MakePatch(string appVersion, int patchNumber, string minAppVersion, int minPatchNumber)
     {
         try
         {
@@ -374,31 +384,26 @@ public partial class BuildTool : EditorWindow
             string androidDir = _rootDir + "/android";
             string assetbundleDir = androidDir + "/assetbundle";
             string assetbundleManifestPath = assetbundleDir + "/assetbundle";
-            string patchDir = androidDir + "/patch/" + targetVersion;
             string manifestDir = androidDir + "/manifest";
 
-            if( targetVersion != 1 && minPatchVersion > targetVersion )
-            {
-                throw new Exception("targetVersion smaller than minPatchVersion");
-            }
+            int patchNumberAll = RemakePatchNumber(appVersion, patchNumber);
+            int minPatchNumberAll = RemakePatchNumber(minAppVersion, minPatchNumber);
 
-            // check manifest that need
-            for (int i = minPatchVersion; i< targetVersion; ++i)
+            string patchDir = androidDir + "/patch/" + patchNumberAll;
+            
+            //조건 체크
+            if (patchNumberAll != 1 && minPatchNumberAll > patchNumberAll)
             {
-                string filePath = string.Format("{0}/{1}.manifest", manifestDir, i);
-                if (!File.Exists(filePath))
-                {
-                    throw new Exception("Can't Fine Manifest File.\n\n" + filePath);
-                }
+                throw new Exception("patchNumber smaller than minPatchNumber");
             }
 
             // 현재 빌드된 버전의 매니페스트 파일과 캐싱된 매니페스트 파일이 일치하는지 확인한다.
-            if (!CompareFileByte(assetbundleManifestPath, string.Format("{0}/{1}.manifest", manifestDir, targetVersion)))
+            if (!CompareFileByte(assetbundleManifestPath, string.Format("{0}/{1}.manifest", manifestDir, patchNumberAll)))
             {
                 throw new Exception("빌드된 메니페스트와 캐싱된 메니페스트 파일이 일치하지 않습니다.");
             }
 
-            //check Directory exist
+            //check patch file folder Directory exist
             if( Directory.Exists(patchDir) )
             {
                 if (EditorUtility.DisplayDialog("Patch", "Same version Patch folder exist.\n Delete and continue to Remake?\n\n" + patchDir, "OK", "CANCEL"))
@@ -411,7 +416,7 @@ public partial class BuildTool : EditorWindow
                 }
             }
 
-            // android/assetbundle 에 있는 assetbundle 라는 이름의 manifest 파일을 읽는다.
+            //android/assetbundle 에 있는 assetbundle 라는 이름의 manifest 파일을 읽는다.
             AssetBundleManifest assetbundleManifest = ReadManifest(assetbundleManifestPath);
             string[] assetbundleManifestAllFiles = assetbundleManifest.GetAllAssetBundles();
 
@@ -421,7 +426,7 @@ public partial class BuildTool : EditorWindow
                 return;
             }
 
-            Logger.Write(string.Format("START MAKE PATCH {0} to {1}", 0.ToString(), targetVersion));
+            Logger.Write(string.Format("START MAKE PATCH {0} to {1}", 0.ToString(), patchNumberAll));
             Logger.Write(assetbundleManifestAllFiles, "[+] ");
             Logger.Write("END MAKE PATCH");
             Logger.WriteSpace();
@@ -438,13 +443,20 @@ public partial class BuildTool : EditorWindow
             List<string> modifyList = new List<string>();
 
             List<int> versionList = new List<int>();
-            if(minPatchVersion > 1)
+            int version1 = RemakePatchNumber(appVersion, 1);
+            if (minPatchNumberAll > version1)
             {
-                versionList.Add(1);
+                versionList.Add(version1);
             }
 
-            for(int i = minPatchVersion; i< targetVersion; ++i)
+            for(int i = minPatchNumberAll; i< patchNumberAll; ++i)
             {
+                // check manifest that maden
+                string filePath = string.Format("{0}/{1}.manifest", manifestDir, i);
+                if (!File.Exists(filePath))
+                {
+                    continue;
+                }
                 versionList.Add(i);
             }
 
@@ -491,7 +503,7 @@ public partial class BuildTool : EditorWindow
                 }
 
                 Logger.WriteSpace();
-                Logger.Write(string.Format("START MAKE PATCH {0} TO {1}", oldVersion, targetVersion));
+                Logger.Write(string.Format("START MAKE PATCH {0} TO {1}", oldVersion, patchNumberAll));
                 Logger.Write(addList.ToArray(), "[+] ");
                 Logger.Write(modifyList.ToArray(), "[!] ");
                 Logger.Write(removeList.ToArray(), "[-] ");
@@ -502,7 +514,7 @@ public partial class BuildTool : EditorWindow
                 assetBundleList.AddRange(addList);
                 assetBundleList.AddRange(modifyList);
 
-                string removeFileName = string.Format("remove_{0}_{1}.txt", oldVersion, targetVersion);
+                string removeFileName = string.Format("remove_{0}_{1}.txt", oldVersion, patchNumberAll);
                 string removeFilePath = assetbundleDir + "/" + removeFileName;
                 if(removeList.Count > 0)
                 {
@@ -522,9 +534,10 @@ public partial class BuildTool : EditorWindow
 
             // write server condition
             ServerCondition serverCondition = new ServerCondition();
-            serverCondition.app_version = version_App;
-            serverCondition.patch_version = targetVersion;
-            serverCondition.min_patch_version = minPatchVersion;
+            serverCondition.app_version = appVersion;
+            serverCondition.patch_number = patchNumber;
+            serverCondition.min_app_version = minAppVersion;
+            serverCondition.min_patch_number = minPatchNumber;
 
             serverCondition.is_opened = true;
             serverCondition.is_regular = true;
@@ -552,13 +565,13 @@ public partial class BuildTool : EditorWindow
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("server_condition.json");
             sb.AppendLine(string.Format("server_condition_{0}.json", Application.version));
-            sb.AppendLine(string.Format("android/{0}/0.crc", targetVersion));
-            sb.AppendLine(string.Format("android/{0}/0.zip", targetVersion));
+            sb.AppendLine(string.Format("android/{0}/0.crc", patchNumberAll));
+            sb.AppendLine(string.Format("android/{0}/0.zip", patchNumberAll));
 
             for (int i = 0; i < versionList.Count; i++)
             {
-                sb.AppendLine(string.Format("android/{0}/{1}.crc", targetVersion, versionList[i]));
-                sb.AppendLine(string.Format("android/{0}/{1}.zip", targetVersion, versionList[i]));
+                sb.AppendLine(string.Format("android/{0}/{1}.crc", patchNumberAll, versionList[i]));
+                sb.AppendLine(string.Format("android/{0}/{1}.zip", patchNumberAll, versionList[i]));
             }
 
             File.WriteAllText(androidDir + "/update_files.txt", sb.ToString());
@@ -573,6 +586,14 @@ public partial class BuildTool : EditorWindow
             EditorUtility.DisplayDialog("Patch Failed", e.Message, "Confirm");
         }
     }
+    private int RemakePatchNumber(string appVersion, int patchNumber)
+    {
+        string[] s = appVersion.Split('.');
+        int f1 = int.Parse(s[0]) * 1000000;
+        int f2 = int.Parse(s[1]) * 1000;
+        return f1 + f2 + patchNumber;
+    }
+
 
 
 

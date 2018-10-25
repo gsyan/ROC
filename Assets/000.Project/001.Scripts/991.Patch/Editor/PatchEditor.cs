@@ -45,30 +45,30 @@ public class PatchEditor : Editor
                     
                     break;
                 case Patch.URLType.Dev:
-                    script.version = EditorGUILayout.TextField("Version", script.version);
-                    if (string.IsNullOrEmpty(script.version))
-                    {
-                        script.address = "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch/patch/";
-                    }
-                    else
-                    {
-                        script.address = "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch@" + script.version +"/patch/";
-                    }
-                    script.filePath = "android_test/";
+                    script.address = "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch";
                     EditorGUILayout.LabelField("Address", script.address);
+
+                    EditorGUILayout.BeginHorizontal();
+                    script.bVersion = EditorGUILayout.Toggle("Version", script.bVersion);
+                    script.verion = "@v" + Application.version;
+                    EditorGUILayout.LabelField(script.verion + ".", new GUILayoutOption[] { GUILayout.MaxWidth(63) } );
+                    script.patchVersion = EditorGUILayout.TextField(script.patchVersion, new GUILayoutOption[] { GUILayout.MaxWidth(40) });
+                    EditorGUILayout.EndHorizontal();
+
+                    script.filePath = "/patch/android_test/";
                     EditorGUILayout.LabelField("FilePath", script.filePath);
                     break;
 
                 case Patch.URLType.QA:
                     script.address = "http://ga.cdn.3rdeyesys.com/guardian_arena/roc/patch/";
-                    script.filePath = "android_qa/";
+                    script.filePath = "/patch/android_qa/";
                     EditorGUILayout.LabelField("Address", script.address);
                     EditorGUILayout.LabelField("FilePath", script.filePath);
                     break;
 
                 case Patch.URLType.Live:
                     script.address = "http://ga.cdn.3rdeyesys.com/guardian_arena/roc/patch/";
-                    script.filePath = "android_live/";
+                    script.filePath = "/patch/android_live/";
                     EditorGUILayout.LabelField("Address", script.address);
                     EditorGUILayout.LabelField("FilePath", script.filePath);
                     break;

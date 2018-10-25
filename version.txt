@@ -7,11 +7,29 @@ Minor : application 재설치
 Patch : 패치 파일 버전
 
 
-1.0.1 부터 시작
-player settings -> other settings -> Version 	= 1.0
-ROC -> build -> PATCH -> app_version 	= 1.0
+0.0.1 부터 시작 (patch number 0 은 로직상 최신버전의 통 파일을 위해 사용 )
+클라이언트에는 app version 까지만
+player settings -> other settings -> Version 	= 0.0
+
+ROC -> build -> PATCH -> app_version 	= 0.0 (from PlayerSettings)
 ROC -> build -> PATCH -> patch_version 	= 1
 ROC -> build -> PATCH -> min_patch_version 	= 1
 
 
+0.0.1 버전의 patch 번호는 정확히 아래의 모양
+000.000.001 = 1 = 일 번
 
+0.1.1 버전의 patch 번호
+000.001.001 = 1,001 =일천 일 번
+
+1.1.1 버전의 patch 번호
+001.001.001 = 1,001,001 =일백만 일천 일 번
+
+0.1.58 -> 0.2.1 으로 될때
+000.001.058 -> 000.002.001
+1,058 번 -> 2,001 번
+
+
+totalTargetVersion
+
+totalMinPatchVersion

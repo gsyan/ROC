@@ -23,10 +23,13 @@ public class Patch : MonoBehaviour
         Custom,
     }
     public URLType urlType;
-    public string address;//패치 서버 주소
-    public string version;
-    public string filePath = "android_test/";
+    public string address;//패치 서버 주소, "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch"
+    public bool bVersion;
+    public string verion;//test용"@v0.0"
+    public string patchVersion;//test용 "1"
+    public string filePath;//"/patch/android_test/"
     
+
     private UIRootPatch _patchUI;
     private string _patchURL = "";//패치 서버의 URL
 
@@ -46,7 +49,7 @@ public class Patch : MonoBehaviour
     private float _currentProgress = 0.0f;
     private int _totalValue = 0;
 
-
+    
     IEnumerator Start()
     {
 #if UNITY_EDITOR
@@ -55,7 +58,6 @@ public class Patch : MonoBehaviour
         SetFilePath();
 
         _patchURL = address;
-        DLog.LogMSG("PatchURL=" + _patchURL);
         
         //런처 텍스트를 로컬라이제이션에 로드
         Localization.LoadCSV(Resources.Load("Localization/launcher") as TextAsset, true);
@@ -78,19 +80,19 @@ public class Patch : MonoBehaviour
     {
 #if UNITY_ANDROID
 #if GAMESERVER_ALL
-        filePath = "android_test/";
+        filePath = "/patch/android_test/";
 #elif GAMESERVER_QA
-        filePath = "android_qa/";
+        filePath = "/patch/android_qa/";
 #elif GAMESERVER_LIVE
-        filePath = "android_live/";
+        filePath = "/patch/android_live/";
 #endif
 #elif UNITY_IOS
 #if GAMESERVER_ALL
-        filePath = "ios_test/";
+        filePath = "/patch/ios_test/";
 #elif GAMESERVER_QA
-        filePath = "ios_qa/";
+        filePath = "/patch/ios_qa/";
 #elif GAMESERVER_LIVE
-        filePath = "ios_live/";
+        filePath = "/patch/ios_live/";
 #endif
 #endif
     }
@@ -121,7 +123,16 @@ public class Patch : MonoBehaviour
     {
         _patchUI.SetStateText(Localization.Get("checking_version"));
 
-        string path = string.Format("{0}{1}server_condition.json", _patchURL, filePath);
+        string path = "";
+        if(bVersion)
+        {
+            path = string.Format("{0}{1}.{2}{3}server_condition.json", _patchURL, verion, patchVersion, filePath);
+        }
+        else
+        {
+            path = string.Format("{0}{1}server_condition.json", _patchURL, filePath);
+        }
+
         DLog.LogMSG("path: " + path);
 
         UnityWebRequest www = UnityWebRequest.Get(path);
@@ -208,7 +219,6 @@ public class Patch : MonoBehaviour
     private void CheckClientAppVersion(ref int[] clientAppVersions)
     {
         clientAppVersions = ConvertVersion(Application.version);
-        clientAppVersions = null;
         if (clientAppVersions == null)
         {
             throw new Exception("invalid_client_app_version");
@@ -320,73 +330,87 @@ public class Patch : MonoBehaviour
 #if !UNITY_EDITOR && !USE_ASSET_BUNDLE
         return;
 #endif
-        int clientPatch = ReadFileValue(_versionFilePath, 0);
-        //DLog.LogMSG("client_patch: " + clientPatch);
-        //DLog.LogMSG("server_patch: " + serverCondition.patch_version);
+        int serverPatchNumber = serverCondition.patch_number;
+        int serverPatchNumberAll = RemakePatchNumber(serverCondition.app_version, serverPatchNumber);
+
+        int minServerPatchNumber = serverCondition.min_patch_number;
+        int minServerPatchNumberAll = RemakePatchNumber(serverCondition.min_app_version, minServerPatchNumber);
+
+        int clientPatchNumber = ReadFileValue(_versionFilePath, 0);
+        int clientPatchNumberAll = RemakePatchNumber(Application.version, clientPatchNumber);
+
 
         // clientPatchVersion 이 0이 아니라면 패치를 받은 상태인것, 0이면 설치후 한번도 패치받지 않은것
-        if (clientPatch > 0)//한번이라도 패치받은 경우
+        if (clientPatchNumber > 0)//한번이라도 패치받은 경우
         {
-            if (clientPatch < serverCondition.min_patch_version)
+            if (clientPatchNumberAll < minServerPatchNumberAll)
             {
                 // 최소 패치 버전보다 낮다면 1을 받는다.
-                clientPatch = 1;
+                clientPatchNumberAll = RemakePatchNumber(Application.version, 1); ;
             }
 
-            if (clientPatch > serverCondition.patch_version)
+            if (clientPatchNumberAll > serverPatchNumberAll)
             {
                 // 클라이언트 패치 버전이 이상함으로 모든 패치 파일을 다시 받고 버전을 갱신한다.
-                clientPatch = 0;
+                clientPatchNumberAll = 0;
             }
         }
 
         // 다운로드 해야 하는 상황
-        if (clientPatch < serverCondition.patch_version)
+        if (clientPatchNumberAll < serverPatchNumberAll)
         {
-            //Callback callback = delegate ()
+            //Callback callbackExtractPatchFile = delegate ()
             //{ //패치가 있으니 받겠냐는 버튼에 오케이 하면 호출
             //    _patchUI.StartLoopImage();
-            //    StartCoroutine(ExtractPatchFile(clientPatch, serverCondition.patch_version));
+            //    StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
             //};
+
+            //Callback callbackQuit = delegate ()
+            //{
+            //    Application.Quit();
+            //};
+
+
 
             //HttpWebResponse response = null;
             //try
             //{
-            //    path = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverCondition.patch_version, clientPatch);
+            //    string path = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
             //    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(path);
             //    request.Method = "HEAD";
             //    response = (HttpWebResponse)(request.GetResponse());
             //}
             //catch (WebException e)
             //{
-            //    DLog.LogMSG(string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverCondition.patch_version, clientPatch) + " doesn't exist: " + e.Message);
+            //    DLog.LogMSG(string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll) + " doesn't exist: " + e.Message);
             //}
 
             //if (response != null)
             //{
             //    //패치 확인 창 x 버튼 클릭시 패치가 받아지는 문제로 인해 callback 에 null을 넣는 것으로 수정, bk
-            //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callback, null);
+            //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callbackExtractPatchFile, null);
             //}
             //else
             //{
-            //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), "", callback, callback));
+            //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_response_null"), "", callbackQuit, callbackQuit));
             //}
 
 
-            StartCoroutine(DownloadFileHead(clientPatch, serverCondition.patch_version));
 
-
+            string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+            Uri uri = new Uri(downloadUrl);
+            UnityWebRequest webRequest = UnityWebRequest.Head("url");
+            Debug.Log("File size: " + webRequest.GetResponseHeader("Content-Length"));
 
 
 
 
 
         }
-
         else
         {
 #if UNITY_EDITOR || USE_ASSET_BUNDLE
-            GInfo.patchVersion = clientPatch;
+            GInfo.patchNumber = clientPatchNumber;
 #endif
             _patchUI.SetStateText(Localization.Get("lastest_version"));
             _patchUI.ClearProgress();
@@ -395,26 +419,47 @@ public class Patch : MonoBehaviour
             StartCoroutine(LoadingLevel());
         }
     }
-
-
-
-
-    IEnumerator DownloadFileHead(int currentVersion, int targetVersion)
+    private int RemakePatchNumber(string appVersion, int patchNumber)
     {
-        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, targetVersion, currentVersion);
+        string[] s = appVersion.Split('.');
+        int f1 = int.Parse(s[0]) * 1000000;
+        int f2 = int.Parse(s[1]) * 1000;
+        return f1 + f2 + patchNumber;
+    }
+
+
+
+    IEnumerator DownloadFileHead(int clientPatchNumberAll, int serverPatchNumberAll)
+    {
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
         Uri uri = new Uri(downloadUrl);
-        using (UnityWebRequest uwr = UnityWebRequest.Get(uri))
+        UnityWebRequest webRequest = UnityWebRequest.Head("url");
+        webRequest.Send();
+        while (!webRequest.isDone)
         {
-            uwr.method = UnityWebRequest.kHttpVerbHEAD;
-            yield return uwr.SendWebRequest();
-
-            Debug.Log(uwr.GetResponseHeader("Content-Length"));
-            Debug.Log(uwr.downloadedBytes);
-            _totalValue = int.Parse(uwr.GetResponseHeader("Content-Length"));
+            yield return null;
         }
+        Debug.Log("File size: " + webRequest.GetResponseHeader("Content-Length"));
 
+
+        //string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+        //Uri uri = new Uri(downloadUrl);
+        //using (UnityWebRequest uwr = UnityWebRequest.Get(uri))
+        //{
+        //    uwr.method = UnityWebRequest.kHttpVerbHEAD;
+        //    yield return uwr.SendWebRequest();
+
+        //    Debug.Log(uwr.GetResponseHeader("Content-Length"));
+        //    Debug.Log(uwr.downloadedBytes);
+        //    _totalValue = int.Parse(uwr.GetResponseHeader("Content-Length"));
+        //}
+
+    }
+    IEnumerator DownloadFileBK(int clientPatchNumberAll, int serverPatchNumberAll)
+    {
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
         //받을 파일의 이름
-        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, currentVersion, targetVersion);
+        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
         using (UnityWebRequest uwr = UnityWebRequest.Get(downloadUrl))
         {
             uwr.method = UnityWebRequest.kHttpVerbGET;
@@ -423,7 +468,7 @@ public class Patch : MonoBehaviour
             uwr.downloadHandler = dh;
             //yield return uwr.SendWebRequest();
             uwr.SendWebRequest();
-            
+
             while (!uwr.isDone)
             {
                 _updateDownloadProgress = true;
@@ -439,13 +484,27 @@ public class Patch : MonoBehaviour
 
         }
     }
-    
-    IEnumerator DownloadFile(int currentVersion, int targetVersion)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    IEnumerator DownloadFile(int clientPatchNumberAll, int serverPatchNumberAll)
     {
         //받을 파일의 이름
-        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, currentVersion, targetVersion);
+        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
         //받을 곳 URL
-        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, targetVersion, currentVersion);
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
         
         var uwr = new UnityWebRequest("https://cdn.jsdelivr.net/gh/gsyan/ROCPatch@v1.0.3/patch/android_test/3/0.zip", UnityWebRequest.kHttpVerbGET);
         uwr.downloadHandler = new DownloadHandlerFile(downloadFilePath);
@@ -458,14 +517,14 @@ public class Patch : MonoBehaviour
 
 
 
-    IEnumerator DownloadPatchFile(int currentVersion, int targetVersion)
+    IEnumerator DownloadPatchFile(int clientPatchNumberAll, int serverPatchNumberAll)
     {
         PlayerPrefs.SetInt(_applyPatchKey, 0);
         _patchUI.SetStateText(Localization.Get("state_download_patch"));
         //받을 파일의 이름
-        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, currentVersion, targetVersion);
+        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
         //받을 곳 URL
-        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, targetVersion, currentVersion);
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
 
 #if UNITY_DEBUG
         float start = Time.realtimeSinceStartup;
@@ -479,7 +538,7 @@ public class Patch : MonoBehaviour
             {
                 Callback callback = delegate ()
                 {
-                    StartCoroutine(DownloadPatchFile(currentVersion, targetVersion));
+                    StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
                 };
 
                 ShowFailMessageBox(state.status, callback);
@@ -493,7 +552,7 @@ public class Patch : MonoBehaviour
         string completeFilePath = downloadFilePath.Remove(downloadFilePath.Length - 1);
 
         TryMoveFile(downloadFilePath, completeFilePath);
-        StartCoroutine(ExtractPatchFile(currentVersion, targetVersion));
+        StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
     }
 
     IEnumerator ExtractPatchFile(int currentVersion, int targetVersion)
@@ -566,7 +625,7 @@ public class Patch : MonoBehaviour
                         TryRemoveFile(removeFilePath);
                     }
 
-                    GInfo.patchVersion = targetVersion;
+                    GInfo.patchNumber = targetVersion;
                     _patchUI.SetStateText(Localization.Get("lastest_version"));
 
 
