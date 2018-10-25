@@ -18,7 +18,7 @@ public static class DLog
 
 #if UNITY_EDITOR
         StringBuilder sb = new StringBuilder();
-        sb.AppendLine("Msg: " + message);
+        sb.AppendLine(message);
         sb.Append("File: " + sourceFilePath);
         sb.Append("// Line: " + sourceLineNumber);
         sb.Append("(Function: " + memberName + ")");

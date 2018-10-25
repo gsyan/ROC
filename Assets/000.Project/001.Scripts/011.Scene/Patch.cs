@@ -395,17 +395,7 @@ public class Patch : MonoBehaviour
             //    _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_response_null"), "", callbackQuit, callbackQuit));
             //}
 
-
-
-            string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
-            Uri uri = new Uri(downloadUrl);
-            UnityWebRequest webRequest = UnityWebRequest.Head("url");
-            Debug.Log("File size: " + webRequest.GetResponseHeader("Content-Length"));
-
-
-
-
-
+            StartCoroutine(DownloadFileHead(clientPatchNumberAll, serverPatchNumberAll));
         }
         else
         {
@@ -427,34 +417,201 @@ public class Patch : MonoBehaviour
         return f1 + f2 + patchNumber;
     }
 
-
-
     IEnumerator DownloadFileHead(int clientPatchNumberAll, int serverPatchNumberAll)
     {
+        Callback callbackExtractPatchFile = delegate ()
+        { //패치가 있으니 받겠냐는 버튼에 오케이 하면 호출
+            _patchUI.StartLoopImage();
+            StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+        };
+
+        Callback callbackQuit = delegate ()
+        {
+            Application.Quit();
+        };
+
         string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
         Uri uri = new Uri(downloadUrl);
-        UnityWebRequest webRequest = UnityWebRequest.Head("url");
-        webRequest.Send();
-        while (!webRequest.isDone)
+        using (UnityWebRequest uwr = UnityWebRequest.Get(uri))
         {
-            yield return null;
+            uwr.method = UnityWebRequest.kHttpVerbHEAD;
+            yield return uwr.SendWebRequest();
+            
+            //Debug.Log(uwr.GetResponseHeader("content-length"));//파일 크기
+            //Debug.Log(uwr.downloadedBytes);//실제로 다운로드된 건 없다는 증거
+            _totalValue = int.Parse(uwr.GetResponseHeader("Content-Length"));
+            if(_totalValue > 0)
+            {
+                //패치 확인 창 x 버튼 클릭시 패치가 받아지는 문제로 인해 callback 에 null을 넣는 것으로 수정, bk
+                _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", _totalValue / 1048576.0f)), callbackExtractPatchFile, null);
+            }
+            else
+            {
+                callbackQuit();
+            }
+
         }
-        Debug.Log("File size: " + webRequest.GetResponseHeader("Content-Length"));
-
-
-        //string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
-        //Uri uri = new Uri(downloadUrl);
-        //using (UnityWebRequest uwr = UnityWebRequest.Get(uri))
-        //{
-        //    uwr.method = UnityWebRequest.kHttpVerbHEAD;
-        //    yield return uwr.SendWebRequest();
-
-        //    Debug.Log(uwr.GetResponseHeader("Content-Length"));
-        //    Debug.Log(uwr.downloadedBytes);
-        //    _totalValue = int.Parse(uwr.GetResponseHeader("Content-Length"));
-        //}
 
     }
+    IEnumerator ExtractPatchFile(int clientPatchNumberAll, int serverPatchNumberAll)
+    {
+        _patchUI.SetStateText(Localization.Get("state_check_availability"));
+
+        // 다운로드 완료된 파일이 있는지 체크
+        string completeFilePath = string.Format("{0}/{1}_{2}", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
+        if (File.Exists(completeFilePath))
+        {
+            // CRC 정보 읽기
+            string crcUrl = string.Format("{0}{1}{2}/{3}.crc", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+            
+            using (UnityWebRequest uwr = UnityWebRequest.Get(crcUrl))
+            {
+                yield return uwr.SendWebRequest();
+
+                if (uwr.isNetworkError || uwr.isHttpError)
+                {
+                    //Debug.Log("CRC server download error: " + uwr.error);
+                    Callback callback = delegate ()
+                    {
+                        StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+                    };
+
+                    ShowFailMessageBox(WebExceptionStatus.ConnectFailure, callback);
+                    yield break;
+                }
+                else
+                {
+                    byte[] serverCrc = uwr.downloadHandler.data;
+                    //using (var stream = new MemoryStream(serverCrc))
+                    //using (var binaryStream = new BinaryReader(stream))
+                    //{
+                    //    Debug.Log(binaryStream);
+                    //}
+                    byte[] clientCrc = AssetBundleUtility.ComputeHash(completeFilePath);
+
+                    if (Utility.ByteArrayCompare(serverCrc, clientCrc))
+                    {
+                        _patchUI.SetStateText(Localization.Get("state_apply_patch"));
+
+#if UNITY_DEBUG
+                        float start = Time.realtimeSinceStartup;
+#endif
+                        string assetBundleDir = Application.persistentDataPath + "/assetbundle";
+                        yield return ZipUtility.Decompression(completeFilePath, assetBundleDir, PlayerPrefs.GetInt(_applyPatchKey, 0), ExtractProgress);
+#if UNITY_DEBUG
+                        DLog.LogMSG("Extract elapsedTime=" + (Time.realtimeSinceStartup - start));
+#endif
+                        PlayerPrefs.SetInt(_applyPatchKey, 0);
+
+                        // 버전 업데이트
+                        _patchUI.SetStateText(Localization.Get("state_remove_file"));
+                        WriteFileValue(_versionFilePath, serverPatchNumberAll);
+
+                        // 패치 파일 삭제
+                        TryRemoveFile(completeFilePath);
+
+                        // 필요 없어진 파일제거
+                        string removeFilePath = string.Format("{0}/remove_{1}_{2}.txt", assetBundleDir, clientPatchNumberAll, serverPatchNumberAll);
+                        if (File.Exists(removeFilePath))
+                        {
+                            try
+                            {
+                                string[] removeFiles = File.ReadAllLines(removeFilePath);
+                                for (int i = 0; i < removeFiles.Length; ++i)
+                                {
+                                    TryRemoveFile(assetBundleDir + "/" + removeFiles[i]);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                DLog.LogMSG(e.ToString());
+                            }
+
+                            TryRemoveFile(removeFilePath);
+                        }
+
+                        GInfo.patchNumber = serverPatchNumberAll;
+                        _patchUI.SetStateText(Localization.Get("lastest_version"));
+
+
+                        // 로그인 씬으로 이동
+                        StartCoroutine(LoadingLevel());
+                    }
+                    else
+                    {
+                        TryRemoveFile(completeFilePath);
+
+                        StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+                    }
+                }
+            }
+        }
+        else
+        {
+            StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+        }
+    }
+    IEnumerator DownloadPatchFile(int clientPatchNumberAll, int serverPatchNumberAll)
+    {
+        PlayerPrefs.SetInt(_applyPatchKey, 0);
+        _patchUI.SetStateText(Localization.Get("state_download_patch"));
+        //받을 파일의 이름
+        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
+        //받을 곳 URL
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+
+#if UNITY_DEBUG
+        float start = Time.realtimeSinceStartup;
+#endif
+
+        using (UnityWebRequest uwr = UnityWebRequest.Get(downloadUrl))
+        {
+            uwr.method = UnityWebRequest.kHttpVerbGET;
+            var dh = new DownloadHandlerFile(downloadFilePath);
+            dh.removeFileOnAbort = true;
+            uwr.downloadHandler = dh;
+            //yield return uwr.SendWebRequest();
+            uwr.SendWebRequest();
+
+            while (!uwr.isDone)
+            {
+                _updateDownloadProgress = true;
+                _currentProgress = uwr.downloadProgress;
+                Debug.Log("_currentProgress: " + _currentProgress);
+                yield return null;
+            }
+
+            if (uwr.isNetworkError || uwr.isHttpError)
+            {
+                //Debug.Log("Download saved to: " + downloadFilePath.Replace("/", "\\") + "\r\n" + uwr.error);
+                Callback callback = delegate ()
+                {
+                    StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+                };
+
+                ShowFailMessageBox(WebExceptionStatus.ConnectFailure, callback);
+                yield break;
+            }
+        }
+
+#if UNITY_DEBUG
+        DLog.LogMSG("Download elapsedTime=" + (Time.realtimeSinceStartup - start));
+#endif
+
+        string completeFilePath = downloadFilePath.Remove(downloadFilePath.Length - 1);
+
+        TryMoveFile(downloadFilePath, completeFilePath);
+        StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+    }
+
+
+
+
+
+
+
+
+
     IEnumerator DownloadFileBK(int clientPatchNumberAll, int serverPatchNumberAll)
     {
         string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
@@ -517,7 +674,7 @@ public class Patch : MonoBehaviour
 
 
 
-    IEnumerator DownloadPatchFile(int clientPatchNumberAll, int serverPatchNumberAll)
+    IEnumerator DownloadPatchFileO(int clientPatchNumberAll, int serverPatchNumberAll)
     {
         PlayerPrefs.SetInt(_applyPatchKey, 0);
         _patchUI.SetStateText(Localization.Get("state_download_patch"));
@@ -555,7 +712,7 @@ public class Patch : MonoBehaviour
         StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
     }
 
-    IEnumerator ExtractPatchFile(int currentVersion, int targetVersion)
+    IEnumerator ExtractPatchFileO(int currentVersion, int targetVersion)
     {
         _patchUI.SetStateText(Localization.Get("state_check_availability"));
 
