@@ -46,6 +46,6 @@ public class UIPanelBattleMenu : UIPanelBase
 
     public void OnCloseButton()
     {
-        BKST.UISystemBK.Instance.HidePanel(this.transform, false);
+        BKST.UISystem.Instance.HidePanel(this.transform, false);
     }
 }

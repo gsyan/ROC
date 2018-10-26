@@ -7,11 +7,11 @@ public partial class Utility
 
     public static void ShowConnecting()
     {
-        BKST.UISystemBK.Instance.ShowPanel(GlobalValues.PANEL_CONNECTING);
+        BKST.UISystem.Instance.ShowPanel(GlobalValues.PANEL_CONNECTING);
     }
     public static void HideConnecting()
     {
-        BKST.UISystemBK.Instance.HidePanel(GlobalValues.PANEL_CONNECTING, false);
+        BKST.UISystem.Instance.HidePanel(GlobalValues.PANEL_CONNECTING, false);
     }
 
 
@@ -23,7 +23,7 @@ public partial class Utility
                                         Callback onCallbackCancel = null,
                                         Callback onCallbackDeactive = null)
     {
-        Transform tm = BKST.UISystemBK.Instance.ShowMessageBox();
+        Transform tm = BKST.UISystem.Instance.ShowMessageBox();
         if( tm != null)
         {
             UIPanelMessageBox mb = tm.GetComponent<UIPanelMessageBox>();

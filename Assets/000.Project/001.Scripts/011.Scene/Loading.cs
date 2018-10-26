@@ -11,10 +11,10 @@ public class Loading : MonoBehaviour
     {
         isLoading = true;
 
-        BKST.UISystemBK.Instance.SetInputState(true);
+        BKST.UISystem.Instance.SetInputState(true);
 
         //ShowPanel
-        BKST.UISystemBK.Instance.ShowPanel(GlobalValues.PANEL_LOADING);
+        BKST.UISystem.Instance.ShowPanel(GlobalValues.PANEL_LOADING);
         ScreenBlinder.Instance.BlinderOff();
         yield return null;
 
@@ -28,7 +28,7 @@ public class Loading : MonoBehaviour
         yield return null;
 
         ScreenBlinder.Instance.BlinderOn();
-        BKST.UISystemBK.Instance.HidePanel(GlobalValues.PANEL_LOADING, false);
+        BKST.UISystem.Instance.HidePanel(GlobalValues.PANEL_LOADING, false);
         yield return null;
 
         yield return ScreenBlinder.Instance.BlinderFadeOut();

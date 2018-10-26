@@ -15,20 +15,20 @@ public enum UITypeBK
 }
 namespace BKST
 {
-    public class UISystemBK : MonoBehaviour
+    public class UISystem : MonoBehaviour
     {
-        private static UISystemBK _instance;
-        public static UISystemBK Instance
+        private static UISystem _instance;
+        public static UISystem Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = GameObject.FindObjectOfType<UISystemBK>();
+                    _instance = GameObject.FindObjectOfType<UISystem>();
                     if(_instance == null)
                     {
-                        GameObject obj = Utility.Instantiate("UI/UISystemBK") as GameObject;
-                        _instance = obj.GetComponent<UISystemBK>();
+                        GameObject obj = Utility.Instantiate("UI/UISystem") as GameObject;
+                        _instance = obj.GetComponent<UISystem>();
                         DontDestroyOnLoad(obj);
                         obj.name = "UISystem";
 
@@ -84,7 +84,7 @@ namespace BKST
         }
         private void OnLevelWasLoaded(int level)
         {
-            DLog.LogMSG("UISystemBK / OnLevelWasLoaded()-> level: " + level + " frameCount: " + Time.frameCount);
+            DLog.LogMSG("UISystem / OnLevelWasLoaded()-> level: " + level + " frameCount: " + Time.frameCount);
 
             int fCount = _createdPanelList.Count;
             for (int i = fCount - 1; i >= 0; --i)

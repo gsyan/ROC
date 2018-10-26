@@ -45,7 +45,7 @@ public class Login : MonoBehaviour
     
     private void ShowPanelLogin()
     {
-        Transform panelLogin = BKST.UISystemBK.Instance.ShowPanel("Panel Login");
+        Transform panelLogin = BKST.UISystem.Instance.ShowPanel("Panel Login");
         if(panelLogin != null)
         {
             if( GInfo.serverType != ServerType.None )

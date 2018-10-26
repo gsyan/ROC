@@ -23,6 +23,6 @@ public class UIPanelConnecting : UIPanelBase
             time += GameTime.deltaTime;
             yield return null;
         }
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
     }
 }

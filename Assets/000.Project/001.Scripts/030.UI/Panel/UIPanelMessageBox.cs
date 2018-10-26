@@ -126,7 +126,7 @@ public class UIPanelMessageBox : UIPanelBase
 
     public void OnYes()
     {
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
         if (onYesCallback != null)
         {
             onYesCallback();
@@ -135,7 +135,7 @@ public class UIPanelMessageBox : UIPanelBase
 
     public void OnNo()
     {
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
         if (onNoCallback != null)
         {
             onNoCallback();
@@ -144,7 +144,7 @@ public class UIPanelMessageBox : UIPanelBase
 
     public void OnOk()
     {
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
         if (onOkCallback != null)
         {
             onOkCallback();
@@ -153,7 +153,7 @@ public class UIPanelMessageBox : UIPanelBase
 
     public void OnCancel()
     {
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
         if (onCancelCallback != null)
         {
             onCancelCallback();
@@ -162,7 +162,7 @@ public class UIPanelMessageBox : UIPanelBase
 
     public void OnCustom1()
     {
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
         if (onCustom_1Callback != null)
         {
             onCustom_1Callback();
@@ -171,7 +171,7 @@ public class UIPanelMessageBox : UIPanelBase
 
     public void OnCustom2()
     {
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
         if (onCustom_2Callback != null)
         {
             onCustom_2Callback();
@@ -180,7 +180,7 @@ public class UIPanelMessageBox : UIPanelBase
 
     public void OnX()
     {
-        BKST.UISystemBK.Instance.HidePanel(transform, false);
+        BKST.UISystem.Instance.HidePanel(transform, false);
     }
 
 }

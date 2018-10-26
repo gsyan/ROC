@@ -108,7 +108,7 @@ public class UIPanelManageFleet : UIPanelBase
 
     public void OnCloseButton()
     {
-        BKST.UISystemBK.Instance.HidePanel(this.transform, false);
+        BKST.UISystem.Instance.HidePanel(this.transform, false);
     }
 
 
