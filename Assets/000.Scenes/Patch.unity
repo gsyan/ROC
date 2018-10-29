@@ -156,8 +156,8 @@ MonoBehaviour:
   urlType: 1
   address: https://cdn.jsdelivr.net/gh/gsyan/ROCPatch
   bVersion: 1
-  verion: '@v0.0'
-  patchVersion: 2
+  verion: '@v0.1'
+  patchVersion: 8
   filePath: /patch/android_test/
 --- !u!1001 &755114680
 Prefab:

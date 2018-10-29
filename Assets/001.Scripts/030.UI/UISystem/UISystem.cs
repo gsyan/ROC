@@ -149,7 +149,6 @@ namespace BKST
 
             bool created = false;
 
-            int kkk = _createdPanelList.Count;
             Transform tm = FindPanel(panelName);//생성된 것들 중 찾아보고
             if (tm == null)//없으면 
             {

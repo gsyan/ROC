@@ -53,17 +53,18 @@ public static class AssetBundleManager
 
     public static string GetAssetBundleName(string path)
     {
-        string result = "assets_000.project_resources_" + path.ToLower().Replace(Path.AltDirectorySeparatorChar, '_');
-        return "assets_000.project_resources_" + path.ToLower().Replace(Path.AltDirectorySeparatorChar, '_');
+        string result = "assets_resources_" + path.ToLower().Replace(Path.AltDirectorySeparatorChar, '_');
+        return "assets_resources_" + path.ToLower().Replace(Path.AltDirectorySeparatorChar, '_');
     }
 
     public static string GetMediaFilePath(string path)
     {
-        return Application.persistentDataPath + "/assetbundle/assets_000.project_resources_media_" + AssetBundleUtility.GetPathWithoutExtension(path).ToLower().Replace(Path.AltDirectorySeparatorChar, '_');
+        return Application.persistentDataPath + "/assetbundle/assets_resources_media_" + AssetBundleUtility.GetPathWithoutExtension(path).ToLower().Replace(Path.AltDirectorySeparatorChar, '_');
     }
 
     public static UnityEngine.Object Load(string path)
     {
+        string assetbundlename = GetAssetBundleName(path);//debuging
         LoadedAssetBundle lab = LoadAssetBundle(GetAssetBundleName(path));
         if (lab != null)
         {

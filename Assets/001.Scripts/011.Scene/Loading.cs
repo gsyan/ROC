@@ -12,7 +12,7 @@ public class Loading : MonoBehaviour
         isLoading = true;
 
         BKST.UISystem.Instance.SetInputState(true);
-
+        
         //ShowPanel
         BKST.UISystem.Instance.ShowPanel(GlobalValues.PANEL_LOADING);
         ScreenBlinder.Instance.BlinderOff();
@@ -23,7 +23,7 @@ public class Loading : MonoBehaviour
 
         Resources.UnloadUnusedAssets();
         yield return null;
-        
+
         SceneManager.LoadScene(SceneLoad.nextScene, LoadSceneMode.Additive);
         yield return null;
 

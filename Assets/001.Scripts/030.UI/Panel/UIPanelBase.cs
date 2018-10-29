@@ -71,12 +71,12 @@ public class UIPanelBase : MonoBehaviour
 
         OnActive();
 
-        if(_DeactiveCoroutine != null)
+        if (_DeactiveCoroutine != null)
         {
             StopCoroutine(_DeactiveCoroutine);
         }
 
-        for(int i = 0; i < _tweeners.Count; ++i)
+        for (int i = 0; i < _tweeners.Count; ++i)
         {
             _tweeners[i].PlayForward();
         }

@@ -16,8 +16,7 @@ public partial class BuildTool : EditorWindow
     //private const string IOS_DIR = "ios";
     //private const string MANIFEST_DIR = "manifest";
 
-    private const string Project_Folder = "000.Project";
-    private const string LAUNCHER_RESOURCE_DIR = "Assets/"+ Project_Folder + "/050.Launcher/Resources";
+    private const string LAUNCHER_RESOURCE_DIR = "Assets/050.Launcher/Resources";
 
     private const string RESOURCE_DIR = "Assets/Resources";
     private const string RESOURCE_TEMP_DIR = "Assets/Resources_";
@@ -30,8 +29,8 @@ public partial class BuildTool : EditorWindow
     private const string CSV_DIR = "Assets/Resources/CSV";
     private const string LUA_DIR = "Assets/StreamingAssets/LuaScripts";
 
-    private const string CSV_ZIP_PATH = "Assets/" + Project_Folder + "/csv.zip";
-    private const string LUA_ZIP_PATH = "Assets/" + Project_Folder + "/lua.zip";
+    private const string CSV_ZIP_PATH = "Assets/csv.zip";
+    private const string LUA_ZIP_PATH = "Assets/lua.zip";
     private const string CSV_PACK_PATH = RESOURCE_DIR + "/csv.bytes";
     private const string LUA_PACK_PATH = RESOURCE_DIR + "/lua.bytes";
     

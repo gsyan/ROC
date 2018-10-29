@@ -24,7 +24,7 @@ public class UIPanelLoading : UIPanelBase
         {
             string str = "LoadingImage/tooltip_" + Random.Range(1, imageCount).ToString();
             Sprite sprite = ResourceSystem.Load<Sprite>(str, true);
-            
+
             if (sprite != null)
             {
                 Resources.UnloadAsset(image.sprite);

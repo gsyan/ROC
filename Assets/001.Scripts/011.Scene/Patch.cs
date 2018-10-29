@@ -8,7 +8,7 @@ using System.Net;//WebExceptionStatus
 using System.Collections;
 using System.Collections.Generic;
 
-
+//https://cdn.jsdelivr.net/gh/gsyan/ROCPatch@v0.0.6/patch/android_test/server_condition.json
 
 public class Patch : MonoBehaviour
 {
@@ -126,12 +126,10 @@ public class Patch : MonoBehaviour
         string path = "";
         if(bVersion)
         {
-            path = string.Format("{0}{1}.{2}{3}server_condition.json", _patchURL, verion, patchVersion, filePath);
+            _patchURL = _patchURL + verion + "." + patchVersion;
+            //path = string.Format("{0}{1}.{2}{3}server_condition.json", _patchURL, verion, patchVersion, filePath);
         }
-        else
-        {
-            path = string.Format("{0}{1}server_condition.json", _patchURL, filePath);
-        }
+        path = string.Format("{0}{1}server_condition.json", _patchURL, filePath);
 
         DLog.LogMSG("path: " + path);
 
@@ -325,46 +323,45 @@ public class Patch : MonoBehaviour
             }
         }
     }
+    int _serverPatchNumber = 0;
     private void CheckPatchVersion(ServerCondition serverCondition)
     {
 #if !UNITY_EDITOR && !USE_ASSET_BUNDLE
         return;
 #endif
-        int serverPatchNumber = serverCondition.patch_number;
-        int serverPatchNumberAll = RemakePatchNumber(serverCondition.app_version, serverPatchNumber);
+        _serverPatchNumber = serverCondition.patch_number;
+        int serverPatchNumberAll = RemakePatchNumber(serverCondition.app_version, _serverPatchNumber);
 
         int minServerPatchNumber = serverCondition.min_patch_number;
         int minServerPatchNumberAll = RemakePatchNumber(serverCondition.min_app_version, minServerPatchNumber);
 
-        int clientPatchNumber = ReadFileValue(_versionFilePath, 0);
-        int clientPatchNumberAll = RemakePatchNumber(Application.version, clientPatchNumber);
-
-
+        int clientVersionNumber = ReadFileValue(_versionFilePath, 0);
+        
         // clientPatchVersion 이 0이 아니라면 패치를 받은 상태인것, 0이면 설치후 한번도 패치받지 않은것
-        if (clientPatchNumber > 0)//한번이라도 패치받은 경우
+        if (clientVersionNumber > 0)//한번이라도 패치받은 경우
         {
-            if (clientPatchNumberAll < minServerPatchNumberAll)
+            if (clientVersionNumber < minServerPatchNumberAll)
             {
                 // 최소 패치 버전보다 낮다면 1을 받는다.
-                clientPatchNumberAll = RemakePatchNumber(Application.version, 1); ;
+                clientVersionNumber = RemakePatchNumber(Application.version, 1); ;
             }
 
-            if (clientPatchNumberAll > serverPatchNumberAll)
+            if (clientVersionNumber > serverPatchNumberAll)
             {
                 // 클라이언트 패치 버전이 이상함으로 모든 패치 파일을 다시 받고 버전을 갱신한다.
-                clientPatchNumberAll = 0;
+                clientVersionNumber = 0;
             }
         }
 
         // 다운로드 해야 하는 상황
-        if (clientPatchNumberAll < serverPatchNumberAll)
+        if (clientVersionNumber < serverPatchNumberAll)
         {
-            StartCoroutine(CheckFileSize(clientPatchNumberAll, serverPatchNumberAll));
+            StartCoroutine(CheckFileSize(clientVersionNumber, serverPatchNumberAll));
         }
         else
         {
 #if UNITY_EDITOR || USE_ASSET_BUNDLE
-            GInfo.patchNumber = clientPatchNumber;
+            GInfo.patchNumber = _serverPatchNumber;
 #endif
             _patchUI.SetStateText(Localization.Get("lastest_version"));
             _patchUI.ClearProgress();
@@ -494,7 +491,7 @@ public class Patch : MonoBehaviour
                             TryRemoveFile(removeFilePath);
                         }
 
-                        GInfo.patchNumber = serverPatchNumberAll;
+                        GInfo.patchNumber = _serverPatchNumber;
                         _patchUI.SetStateText(Localization.Get("lastest_version"));
 
 
@@ -710,7 +707,7 @@ public class Patch : MonoBehaviour
                         TryRemoveFile(removeFilePath);
                     }
 
-                    GInfo.patchNumber = serverPatchNumberAll;
+                    GInfo.patchNumber = _serverPatchNumber;
                     _patchUI.SetStateText(Localization.Get("lastest_version"));
 
 

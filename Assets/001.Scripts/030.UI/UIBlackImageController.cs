@@ -26,7 +26,7 @@ public class UIBlackImageController : MonoBehaviour
         Transform parent = _cachedTransform;
         bool active = false;
 
-        if(target != null)
+        if (target != null)
         {
             active = true;
             Transform depth = target.transform.parent;
