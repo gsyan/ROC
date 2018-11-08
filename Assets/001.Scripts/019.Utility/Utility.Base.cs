@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 
 public partial class Utility
 {
@@ -379,19 +381,7 @@ public partial class Utility
         return true;
     }
 
-    //string array 가 특정 string을 가지고 있는지 검사
-    public static bool StringArrayContainString(string[] stringArray, string findingString)
-    {
-        int fCount = stringArray.Length;
-        for(int i=0; i<fCount; ++i)
-        {
-            if( string.Compare(stringArray[i], findingString) == 0 )
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+    
     
     //게임 오브젝트 생성관련
     public static Object Instantiate(string path)
@@ -471,8 +461,6 @@ public partial class Utility
     }
 
 
-
-
     //string 으로 layer 바꾸기
     public static void ChangeLayerRecursively(Transform target, string layerName)
     {
@@ -488,9 +476,6 @@ public partial class Utility
             ChangeLayerRecursively(child, layer);
         }
     }
-
-
-
 
 
     //부모 설정, layer 까지 변경 할지 옵션
@@ -524,9 +509,6 @@ public partial class Utility
             }
         }
     }
-
-
-
 
 
     public static string GetNationFromCode(string nationCode)
@@ -1108,9 +1090,12 @@ public partial class Utility
     #endregion Math, Vector
 
     #region String Function
-    public static void StringRemoveSpace(string str)
+    private void AboutString()
     {
-        str.Trim();
+        string str = "";
+        str.Trim();//첫부분과 끝부분에 있는 공백문자 제거
+        str.Replace(" ", string.Empty);//공백문자 제거
+
         //대소문자
         //str.ToUpper();
         //str.ToLower();
@@ -1122,7 +1107,77 @@ public partial class Utility
         //string[] s = str.split('.')
     }
 
+    //string array 가 특정 string을 가지고 있는지 검사
+    public static bool StringArrayContainString(string[] stringArray, string findingString)
+    {
+        int fCount = stringArray.Length;
+        for (int i = 0; i < fCount; ++i)
+        {
+            if (string.Compare(stringArray[i], findingString) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     #endregion String Function
+
+    #region text
+    private void AboutText()
+    {
+        string filePath = Application.dataPath.Replace("Assets", string.Empty) + "TestData" + ".txt";
+
+        if (File.Exists(filePath))
+        {
+            using (StreamReader sr = File.OpenText(filePath))//읽기
+            {
+                string line;
+                string[] values;
+                string key;
+                while (!sr.EndOfStream)
+                {
+                    line = sr.ReadLine();
+                    values = line.Split(',');
+                    key = string.Format("{0},{1},{2}", values[0], values[1], values[2]);
+                }
+            }
+        }
+
+        Dictionary<string, int> _dataDic = new Dictionary<string, int>();
+        CreateDirectory(filePath);
+        string msg = "";
+        using (StreamWriter sw = File.AppendText(filePath))//추가
+        {
+            foreach (string key in _dataDic.Keys)
+            {
+                
+            }
+
+            msg = "1234";
+            sw.WriteLine("{0}", msg);
+            sw.Flush();
+        }
+        using (StreamWriter sw = File.CreateText(filePath))//새로만듬
+        {
+            msg = "1234";
+            sw.WriteLine("{0}", msg);
+            sw.Flush();
+        }
+
+    }
+    public static void CreateDirectory(string path)
+    {
+        string dir = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);//경로가 없으면 만든다.
+        }
+    }
+
+
+    #endregion text
 
     #region Application System
     //SystemLanguage sl = Application.systemLanguage;//참고
@@ -1176,7 +1231,7 @@ public partial class Utility
     //}
 
 
-    
+
 
     #endregion etc
 

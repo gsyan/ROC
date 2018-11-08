@@ -57,6 +57,9 @@ public class PatchEditor : Editor
 
                     script.filePath = "/patch/android_test/";
                     EditorGUILayout.LabelField("FilePath", script.filePath);
+
+                    script.useAssetbundle = EditorGUILayout.Toggle("UseAssetbundle", script.useAssetbundle);
+
                     break;
 
                 case Patch.URLType.QA:

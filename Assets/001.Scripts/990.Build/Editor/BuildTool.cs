@@ -41,7 +41,7 @@ public partial class BuildTool : EditorWindow
 
     public void OnEnable()
     {
-        _rootDir = "D:/bk/Project/ROC/bin"; //PlayerPrefs.GetString("buildtool_root_dir");
+        _rootDir = Application.dataPath.Replace("Assets", "") + "bin";//"D:/bk/Project/ROC/bin"; //PlayerPrefs.GetString("buildtool_root_dir")
         _selectedTab = PlayerPrefs.GetInt("buildtool_selected_tab", 0);
     }
 

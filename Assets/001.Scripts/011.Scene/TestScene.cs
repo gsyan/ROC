@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class TestScene : MonoBehaviour
 {
@@ -19,6 +20,17 @@ public class TestScene : MonoBehaviour
         BKST.UISystem.Instance.SetInputState(true);
 
         //BKST.UISystem.Instance.ShowPanel("Panel Asset");
+
+        string filePath = Application.dataPath.Replace("Assets", string.Empty) + "TestData" + ".txt";
+        Utility.CreateDirectory(filePath);
+        string msg = "";
+        using (StreamWriter sw = File.CreateText(filePath))
+        {
+            msg = "1234";
+            sw.WriteLine("{0}", msg);
+            sw.Flush();
+        }
+
     }
 	
 	// Update is called once per frame

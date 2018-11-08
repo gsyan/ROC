@@ -33,3 +33,22 @@ ROC -> build -> PATCH -> min_patch_version 	= 1
 totalTargetVersion
 
 totalMinPatchVersion
+
+
+===============================================
+purge way ( get it done !!)
+
+curl -X POST \
+  http://purge.jsdelivr.net/ \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -d '{
+	"path": [
+		"/npm/test",
+		"/npm/test2",
+		"/npm/test3"
+	]
+}'
+
+curl -X POST http://purge.jsdelivr.net -H 'cache-control: no-cache' -H 'content-type: application/json' -d '{"path": ["https://cdn.jsdelivr.net/gh/gsyan/ROCPatch@v0.0.3/patch/android_test/server_condition.json"]}'
+curl -X POST http://purge.jsdelivr.net -H 'cache-control: no-cache' -H 'content-type: application/json' -d '{"path": ["/gh/gsyan/ROCPatch@v0.0.3/patch/android_test/server_condition.json"]}'

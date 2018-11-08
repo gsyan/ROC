@@ -28,7 +28,7 @@ public class Patch : MonoBehaviour
     public string verion;//test용"@v0.0"
     public string patchVersion;//test용 "1"
     public string filePath;//"/patch/android_test/"
-    
+    public bool useAssetbundle;
 
     private UIRootPatch _patchUI;
     private string _patchURL = "";//패치 서버의 URL
@@ -53,7 +53,7 @@ public class Patch : MonoBehaviour
     IEnumerator Start()
     {
 #if UNITY_EDITOR
-        ResourceSystem.useAssetBundle = true;
+        ResourceSystem.useAssetBundle = useAssetbundle;
 #endif
         SetFilePath();
 
