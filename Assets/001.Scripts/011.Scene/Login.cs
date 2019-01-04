@@ -21,7 +21,7 @@ public class Login : MonoBehaviour
     {
 #if UNITY_EDITOR
         //TheFirst 에서 수행
-        NativeBK.Instance.Init();
+        NativeBridge.Instance.Init();
         GameSettings.Instance.Apply();
         //TheFirst 에서 수행
 #endif

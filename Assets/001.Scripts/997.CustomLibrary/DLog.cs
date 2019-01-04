@@ -37,7 +37,7 @@ public static class DLog
         
         Debug.Log(sb.ToString());
 #else
-        NativeBK.LogMSG(message);
+        NativeBridge.LogMSG(message);
 #endif
 
 

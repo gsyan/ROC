@@ -93,7 +93,7 @@ public class LobbyManager : MonoBehaviour
 
             //
             
-            string nationName = GData.Instance.GetNationName(NativeBK.LocaleData.code);
+            string nationName = GData.Instance.GetNationName(NativeBridge.LocaleData.code);
 
             Dictionary<int, string>.Enumerator itor = bannerList.GetEnumerator();
             while ( itor.MoveNext() )
@@ -104,7 +104,7 @@ public class LobbyManager : MonoBehaviour
                     string url = itor.Current.Value;
                     if (url.Contains("/EN/"))//서버에서 받는 기본 값은 EN이다 이것을 언어에 맞게 고친다.
                     {
-                        url = url.Replace("/EN/", "/" + NativeBK.LocaleData.code + "/");
+                        url = url.Replace("/EN/", "/" + NativeBridge.LocaleData.code + "/");
                     }
 
                     KeyValuePair<string, string> value = new KeyValuePair<string, string>(playerPrefsKey, url);

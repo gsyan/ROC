@@ -39,18 +39,18 @@ public partial class BuildTool : EditorWindow
         // BUTTON BUILD
         if (GUILayout.Button("Build AssetBundle"))
         {
-            Build(app_version, patchNumber);
+            Build(patchNumber);
         }
 
         // BUTTON PATCH
         if (GUILayout.Button("Make Patch"))
         {
-            MakePatch(app_version, patchNumber, min_version, minPatchNumber);
+            MakePatch(min_version, patchNumber, minPatchNumber);
         }
         
     }
     
-    void Build(string appVersion, int patchNumber)
+    void Build(int patchNumber)
     {
         try
         {
@@ -373,7 +373,7 @@ public partial class BuildTool : EditorWindow
         }
     }
 
-    void MakePatch(string appVersion, int patchNumber, string minAppVersion, int minPatchNumber)
+    void MakePatch(string minAppVersion, int patchNumber, int minPatchNumber)
     {
         try
         {

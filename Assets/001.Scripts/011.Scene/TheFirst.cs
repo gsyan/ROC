@@ -12,7 +12,7 @@ public class TheFirst : MonoBehaviour
 
         GameSettings.Instance.Apply();
 
-        NativeBK.Instance.Init();
+        NativeBridge.Instance.Init();
 
         SceneManager.LoadScene("CI");
     }

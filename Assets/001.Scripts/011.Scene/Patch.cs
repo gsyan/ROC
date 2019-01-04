@@ -89,7 +89,7 @@ public class Patch : MonoBehaviour
 #elif GAMESERVER_LIVE
         filePath = "/patch/android_live/";
 #endif
-#elif UNITY_IOS
+#elif UNITY_IPHONE
 #if GAMESERVER_ALL
         filePath = "/patch/ios_test/";
 #elif GAMESERVER_QA
@@ -297,7 +297,7 @@ public class Patch : MonoBehaviour
         if (!string.IsNullOrEmpty(serverCondition.tester_app_version))
         {
             int[] testerAppVersions = ConvertVersion(serverCondition.tester_app_version);
-            //NativeBK.LogMSG("PatchServer testerAppVersions: " + serverCondition.tester_app_version);
+            //NativeBridge.LogMSG("PatchServer testerAppVersions: " + serverCondition.tester_app_version);
             for (int i = 0; i < _appVersionLength; i++)
             {
                 if (clientAppVersions[i] < testerAppVersions[i])//주의 testerAppVersions 과 같은 버전의 클라이언트는 테스터가 됨
@@ -314,10 +314,10 @@ public class Patch : MonoBehaviour
     {
         if (!isTester)
         {
-            //NativeBK.SetGAID("e099125a-4097-4af9-af5b-0154cb92e4ad");//인위적으로 등록된 테스터의 광고아이디 삽입
+            //NativeBridge.SetGAID("e099125a-4097-4af9-af5b-0154cb92e4ad");//인위적으로 등록된 테스터의 광고아이디 삽입
             for (int i = 0; i < serverCondition.tester.Length; ++i)
             {
-                if (string.Compare(serverCondition.tester[i], NativeBK.GAID) == 0)
+                if (string.Compare(serverCondition.tester[i], NativeBridge.GAID) == 0)
                 {
                     return true;
                 }

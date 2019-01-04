@@ -1218,8 +1218,8 @@ public partial class Utility
     #region Application System
     //SystemLanguage sl = Application.systemLanguage;//참고
     //RuntimePlatform rp = Application.platform;//참고
-    //NativeBK.GAID
-    //NativeBK.LocaleData.code
+    //NativeBridge.GAID
+    //NativeBridge.LocaleData.code
 
     #endregion Application System
 

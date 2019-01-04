@@ -128,7 +128,7 @@ public partial class BuildTool : EditorWindow
 
             index++;
         }
-#elif UNITY_IOS
+#elif UNITY_IPHONE
         int selectedSocial = (int)DefineSocialType.SOCIAL_GUEST_ONLY;
 #else
 		int selectedSocial = (int)DefineSocialType.SOCIAL_GUEST_ONLY;
