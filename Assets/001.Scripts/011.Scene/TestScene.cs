@@ -31,6 +31,7 @@ public class TestScene : MonoBehaviour
             sw.Flush();
         }
 
+        StartCoroutine(TestF());
     }
 	
 	// Update is called once per frame
@@ -76,7 +77,37 @@ public class TestScene : MonoBehaviour
             BKST.UISystem.Instance.HidePanel(panelName, false);
         }
 
+
+        
+
     }
+
+    float startTime;
+    float latency;
+
+    private void FixedUpdate()
+    {
+        startTime = Time.realtimeSinceStartup;
+
+        //latency = Time.realtimeSinceStartup - startTime;
+        //startTime = Time.realtimeSinceStartup;
+        //Debug.Log("latancy: " + latency);
+
+    }
+    IEnumerator TestF()
+    {
+        while(true)
+        {
+            yield return new WaitForEndOfFrame();
+
+            latency = Time.realtimeSinceStartup - startTime;
+            Debug.Log("latancy: " + latency);
+        }
+            
+
+        
+    }
+
 
 
 }

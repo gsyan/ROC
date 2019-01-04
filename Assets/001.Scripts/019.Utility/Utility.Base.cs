@@ -533,49 +533,44 @@ public partial class Utility
 
     #region Make Object
     /// Make Plane with 3 points(triangle)
-    public static Vector3[] GetQuadPointsFromTriangle(Transform p1, Transform p2, Transform p3)
-    {   //p1 = bottom left / p2 = bottom right / p3 = top
-        return GetQuadPointsFromTriangle(p1.position, p2.position, p3.position);
+    public static Vector3[] GetQuadPointsFromTriangle(Transform top, Transform left, Transform right)
+    {   
+        return GetQuadPointsFromTriangle(top.position, left.position, right.position);
     }
-    public static Vector3[] GetQuadPointsFromTriangle(Vector3 p1, Vector3 p2, Vector3 p3)
+    public static Vector3[] GetQuadPointsFromTriangle(Vector3 top, Vector3 left, Vector3 right)
     {
-        //p1 = bottom left / p2 = bottom right / p3 = top
-
         //삼각형 상태 점검, 이등변 삼각형을 만들어둔다
-        Vector3 topToBL = (p1 - p3);
-        Vector3 topToBR = (p2 - p3);
-        if( topToBL.magnitude > topToBR.magnitude )
+        Vector3 topToLeft = left - top;
+        Vector3 topToRight = right - top;
+        if(topToLeft.magnitude > topToRight.magnitude )
         {
-            p2 = p3 + topToBR.normalized * topToBL.magnitude;
+            right = top + topToRight.normalized * topToLeft.magnitude;
         }
-        else if(topToBL.magnitude < topToBR.magnitude)
+        else if(topToLeft.magnitude < topToRight.magnitude)
         {
-            p1 = p3 + topToBL.normalized * topToBR.magnitude;
+            left = top + topToLeft.normalized * topToRight.magnitude;
         }
 
-        return Get4PointsFromIsoscelesTriangle(p1, p2, p3);
+        return Get4PointsFromIsoscelesTriangle(top, left, right);
     }
-    private static Vector3[] Get4PointsFromIsoscelesTriangle(Vector3 p1, Vector3 p2, Vector3 p3)
+    private static Vector3[] Get4PointsFromIsoscelesTriangle(Vector3 top, Vector3 left, Vector3 right)
     {
-        //p1 = bottom left / p2 = bottom right / p3 = top
-
         //bottom points 간 서로에 대한 normalized vector
-        Vector3 v1To2Nor = (p2 - p1).normalized;
-        Vector3 v2to1Nor = -v1To2Nor;//위에꺼 부호만 바꿔도 된다.
+        Vector3 vLtoRNor = (right - left).normalized;
+        Vector3 vRtoLNor = -vLtoRNor;//위에꺼 부호만 바꿔도 된다.
 
         //top point 에서 bottom points 로 향하는 벡터
-        Vector3 v3to2 = p2 - p3;
-        Vector3 v3to1 = p1 - p3;
+        Vector3 vLtoT = top - left;
+        Vector3 vRtoT = top - right;
 
-        float lengthToptoTR = Vector3.Dot(v3to2, v1To2Nor);
-        float lengthToptoTL = Vector3.Dot(v3to1, v2to1Nor);
-
+        float lengthToptoTL = Vector3.Dot(vLtoT, vLtoRNor);//이등변 이니 반대 경우는 구하지 않고 이걸 쓴다.
+        
         return new Vector3[]
         {
-            p1,//BottomLeft point of Plane's four points
-            p2,//BottomRight point of Plane's four points
-            p3 + v1To2Nor * lengthToptoTR,//TopRight point of Plane's four points
-            p3 + v2to1Nor * lengthToptoTL //TopLeft point of Plane's four points
+            left,//BottomLeft point of Plane's four points
+            right,//BottomRight point of Plane's four points
+            top + vLtoRNor * lengthToptoTL,//TopRight point of Plane's four points
+            top + vRtoLNor * lengthToptoTL //TopLeft point of Plane's four points
         };
     }
     public static GameObject MakeQuad(Material planeMaterial, Vector3[] rectPoins)
@@ -612,6 +607,33 @@ public partial class Utility
         m.RecalculateBounds();
         m.RecalculateNormals();
         return plane;
+    }
+    public static void MakePlane(Vector3[] fourPoints, Material planeMaterial, Transform parent)
+    {
+        //fourPoints[0];//BL
+        //fourPoints[1];//BR
+        //fourPoints[2];//TR
+        //fourPoints[3];//TL
+
+        //보이기용 plane 생성
+        Vector3 position = fourPoints[0] + (fourPoints[2] - fourPoints[0]) / 2.0f;
+
+        GameObject planeView = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        planeView.transform.position = position;
+        planeView.transform.localScale = new Vector3(1, 2, 5) * 0.01f;
+
+        Vector3 v0to1 = (fourPoints[1] - fourPoints[0]).normalized;
+        Vector3 v0to3 = (fourPoints[3] - fourPoints[0]).normalized;
+        Vector3 normal = Vector3.Cross(v0to3, v0to1);
+        Vector3 planeRightNor = (fourPoints[1] - fourPoints[0]).normalized;
+        Vector3 planeForward = Vector3.Cross(planeRightNor, normal).normalized;
+
+        Quaternion q = Quaternion.LookRotation(planeForward, normal);
+
+        planeView.transform.rotation = q;
+        planeView.transform.parent = parent;
+
+        planeView.GetComponent<MeshRenderer>().material = planeMaterial;
     }
 
     public static GameObject InstantiateUnityPrimitive(PrimitiveType primitiveType)
@@ -1178,6 +1200,20 @@ public partial class Utility
 
 
     #endregion text
+
+    #region Line
+    private void ManageLineRenderer()
+    {
+        LineRenderer lr = new LineRenderer();//실제로는 getcomponent 로 취하는게~ 
+        Vector3 position1 = new Vector3(0, 0, 1);
+        Vector3 position2 = new Vector3(0, 0, 10);
+        lr.positionCount = 2;
+        lr.SetPosition(0, position1);
+        lr.SetPosition(1, position2);
+    }
+
+    #endregion
+
 
     #region Application System
     //SystemLanguage sl = Application.systemLanguage;//참고

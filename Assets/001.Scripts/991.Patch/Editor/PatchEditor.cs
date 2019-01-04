@@ -44,18 +44,23 @@ public class PatchEditor : Editor
                     }
                     
                     break;
-                case Patch.URLType.Dev:
-                    script.address = "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch";
+
+                case Patch.URLType.Local2:
+                    script.address = "http://192.168.70.145";
                     EditorGUILayout.LabelField("Address", script.address);
 
-                    EditorGUILayout.BeginHorizontal();
-                    script.bVersion = EditorGUILayout.Toggle("Version", script.bVersion);
-                    script.verion = "@v" + Application.version;
-                    EditorGUILayout.LabelField(script.verion + ".", new GUILayoutOption[] { GUILayout.MaxWidth(63) } );
-                    script.patchVersion = EditorGUILayout.TextField(script.patchVersion, new GUILayoutOption[] { GUILayout.MaxWidth(40) });
-                    EditorGUILayout.EndHorizontal();
+                    script.filePath = "/";
+                    EditorGUILayout.LabelField("FilePath", script.filePath);
 
-                    script.filePath = "/patch/android_test/";
+                    script.useAssetbundle = EditorGUILayout.Toggle("UseAssetbundle", script.useAssetbundle);
+
+                    break;
+
+                case Patch.URLType.Dev:
+                    script.address = "https://cdn/gh/gsyan/ROCPatch";
+                    EditorGUILayout.LabelField("Address", script.address);
+
+                    script.SetFilePath();
                     EditorGUILayout.LabelField("FilePath", script.filePath);
 
                     script.useAssetbundle = EditorGUILayout.Toggle("UseAssetbundle", script.useAssetbundle);

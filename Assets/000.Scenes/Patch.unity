@@ -154,11 +154,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   urlType: 1
-  address: https://cdn.jsdelivr.net/gh/gsyan/ROCPatch
-  bVersion: 1
-  verion: '@v0.1'
-  patchVersion: 8
-  filePath: /patch/android_test/
+  address: http://192.168.70.145
+  filePath: /
+  useAssetbundle: 1
 --- !u!1001 &755114680
 Prefab:
   m_ObjectHideFlags: 0

@@ -4,9 +4,8 @@ using UnityEngine;
 
 public class ServerCondition
 {
-    public string app_version = "";
-    public int patch_number;
     public string min_app_version = "";
+    public int patch_number;
     public int min_patch_number;
     
     public bool is_opened;

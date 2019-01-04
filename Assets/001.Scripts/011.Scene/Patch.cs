@@ -8,8 +8,6 @@ using System.Net;//WebExceptionStatus
 using System.Collections;
 using System.Collections.Generic;
 
-//https://cdn.jsdelivr.net/gh/gsyan/ROCPatch@v0.0.6/patch/android_test/server_condition.json
-
 public class Patch : MonoBehaviour
 {
     private const string _applyPatchKey = "apply_patch_count";
@@ -17,21 +15,20 @@ public class Patch : MonoBehaviour
     public enum URLType
     {
         Local,
+        Local2,
         Dev,
         QA,
         Live,
         Custom,
     }
     public URLType urlType;
-    public string address;//패치 서버 주소, "https://cdn.jsdelivr.net/gh/gsyan/ROCPatch"
-    public bool bVersion;
-    public string verion;//test용"@v0.0"
-    public string patchVersion;//test용 "1"
-    public string filePath;//"/patch/android_test/"
+    public string address;//패치 서버 url
+    public string filePath;// 패치 서버 url 이하 폴더구조  ex: /patch/android_test/"
     public bool useAssetbundle;
 
+    private int _appVersionLength = 3;//app version 은 0.0.1 형태로 3개의 숫자로 구성됨
     private UIRootPatch _patchUI;
-    private string _patchURL = "";//패치 서버의 URL
+    private string _baseUrl = "";//패치 서버의 URL
 
     //패치 버전 숫자를 저장할 파일이 있는 경로
     private string _versionFilePath
@@ -55,9 +52,8 @@ public class Patch : MonoBehaviour
 #if UNITY_EDITOR
         ResourceSystem.useAssetBundle = useAssetbundle;
 #endif
-        SetFilePath();
-
-        _patchURL = address;
+        
+        _baseUrl = address;
         
         //런처 텍스트를 로컬라이제이션에 로드
         Localization.LoadCSV(Resources.Load("Localization/launcher") as TextAsset, true);
@@ -72,11 +68,18 @@ public class Patch : MonoBehaviour
 
         yield return ScreenBlinder.Instance.BlinderFadeOut();
 
-        StartCoroutine(DownloadServerConditionThisVersion());
-
+        if( _baseUrl.Contains("https") )
+        {
+            StartCoroutine(DownloadServerConditionHTTPS());
+        }
+        else
+        {
+            StartCoroutine(DownloadServerConditionHTTP());
+        }
+        
         yield return 0;
     }
-    private void SetFilePath()
+    public void SetFilePath()
     {
 #if UNITY_ANDROID
 #if GAMESERVER_ALL
@@ -119,27 +122,21 @@ public class Patch : MonoBehaviour
 
 
     //ServerCondition 받고자, 버전과 패치 번호 등이 주요 이슈인듯
-    IEnumerator DownloadServerConditionThisVersion()
+    IEnumerator DownloadServerConditionHTTPS()
     {
         _patchUI.SetStateText(Localization.Get("checking_version"));
 
-        string path = "";
-        if(bVersion)
-        {
-            _patchURL = _patchURL + verion + "." + patchVersion;
-            //path = string.Format("{0}{1}.{2}{3}server_condition.json", _patchURL, verion, patchVersion, filePath);
-        }
-        path = string.Format("{0}{1}server_condition.json", _patchURL, filePath);
-
+        string path = string.Format("{0}{1}server_condition.json", _baseUrl, filePath);
         DLog.LogMSG("path: " + path);
 
         UnityWebRequest www = UnityWebRequest.Get(path);
+        
         yield return www.SendWebRequest();
 
         if (www.isNetworkError || www.isHttpError)
         {
             Debug.Log(www.error);
-            StartCoroutine(DownloadServerCondition());
+            StartCoroutine(DownloadServerConditionHTTPSLoop());
             yield break;
         }
         
@@ -147,11 +144,33 @@ public class Patch : MonoBehaviour
         byte[] results = www.downloadHandler.data;
         OnDoneServerCondition(JsonUtility.FromJson<ServerCondition>(Encoding.UTF8.GetString(results)));
     }
+    IEnumerator DownloadServerConditionHTTP()
+    {
+        _patchUI.SetStateText(Localization.Get("checking_version"));
+
+        //string path = string.Format("{0}{1}server_condition.json", baseUrl, filePath, GameInfo.GetAppVersion());
+        string path = string.Format("{0}{1}server_condition.json", _baseUrl, filePath);
+        DLog.LogMSG("patch url: " + path);
+
+        using (MemoryStream stream = new MemoryStream())
+        {
+            WaitForDownload state = HttpRequestDownloader.DownloadFile(path, stream);
+            yield return state;
+            DLog.LogMSG("state.isDone: " + state.isDone);
+            if (!state.isDone)
+            {
+                StartCoroutine(DownloadServerConditionHTTPLoop());
+                yield break;
+            }
+
+            OnDoneServerCondition(JsonUtility.FromJson<ServerCondition>(Encoding.UTF8.GetString(stream.ToArray())));
+        }
+    }
 
     //최초 ServerCondition 정보 받아오기가 안되면 다시 시도 할지 UI보여주고 승락 시 다시 수행
-    IEnumerator DownloadServerCondition()
+    IEnumerator DownloadServerConditionHTTPSLoop()
     {
-        string path = string.Format("{0}{1}server_condition.json", _patchURL, filePath);
+        string path = string.Format("{0}{1}server_condition.json", _baseUrl, filePath);
         
         UnityWebRequest www = UnityWebRequest.Get(path);
         yield return www.SendWebRequest();
@@ -160,9 +179,9 @@ public class Patch : MonoBehaviour
         {
             Callback callback = delegate ()
             {
-                StartCoroutine(DownloadServerCondition());
+                StartCoroutine(DownloadServerConditionHTTPSLoop());
             };
-            //ShowFailMessageBox(state.status, callback);
+            ShowFailMessageBox(WebExceptionStatus.UnknownError, callback);
             Debug.Log("www.error");
             yield break;
         }
@@ -170,6 +189,30 @@ public class Patch : MonoBehaviour
         byte[] results = www.downloadHandler.data;
         OnDoneServerCondition(JsonUtility.FromJson<ServerCondition>(Encoding.UTF8.GetString(results)));
     }
+    IEnumerator DownloadServerConditionHTTPLoop()
+    {
+        using (MemoryStream stream = new MemoryStream())
+        {
+            //string path = string.Format("{0}{1}server_condition.json", _baseUrl, filePath, GameInfo.GetAppVersion());
+            string path = string.Format("{0}{1}server_condition.json", _baseUrl, filePath);
+            WaitForDownload state = HttpRequestDownloader.DownloadFile(path, stream);
+            yield return state;
+
+            if (!state.isDone)
+            {
+                Callback callback = delegate ()
+                {
+                    StartCoroutine(DownloadServerConditionHTTPLoop());
+                };
+
+                ShowFailMessageBox(state.status, callback);
+                yield break;
+            }
+
+            OnDoneServerCondition(JsonUtility.FromJson<ServerCondition>(Encoding.UTF8.GetString(stream.ToArray())));
+        }
+    }
+
 
     //bk, ServerCondition 정보 받아왔으면, 이를 토대로 패치(ExtractPatchFile)를 받을지 다음 씬으로 넘길지 결정
     void OnDoneServerCondition(ServerCondition serverCondition)
@@ -180,14 +223,10 @@ public class Patch : MonoBehaviour
             int[] clientAppVersions = null;
             CheckClientAppVersion(ref clientAppVersions);
 
-            //minAppVersions(서버에서받은 server_condition.json)
-            int[] serverAppVersions = null;
-            CheckServerAppVersion(serverCondition, ref serverAppVersions);
-
             // bk, clientAppVersions(unity project settings) 과 minAppVersions(서버에서받은 server_condition.json) 비교
             // 서버에서받은 데이터의 min_application_version 버전보다 낮으면 
             // 앱 스토어에 새 버전이 있음을 UI로 알리고, 유저가 확인하면 해당 마켓으로 리다이랙션 및 앱 종료,
-            CheckUpdateApp(clientAppVersions, serverAppVersions, serverCondition);
+            CheckUpdateApp(clientAppVersions, serverCondition);
 
             GInfo.serverType = serverCondition.server_type;
             GInfo.serverGroup = serverCondition.server_group;
@@ -222,25 +261,18 @@ public class Patch : MonoBehaviour
             throw new Exception("invalid_client_app_version");
         }
     }
-    private void CheckServerAppVersion(ServerCondition serverCondition, ref int[] serverAppVersions)
-    {
-        serverAppVersions = ConvertVersion(serverCondition.app_version);
-        //DLog.LogMSG("PatchServer AppVersion: " + serverCondition.app_version);
-        if (serverAppVersions == null)
-        {
-            throw new Exception("invalid_server_app_version");
-        }
-    }
-    private void CheckUpdateApp(int[] clientAppVersions, int[] serverAppVersions, ServerCondition serverCondition)
+    private void CheckUpdateApp(int[] clientAppVersions, ServerCondition serverCondition)
     {
         //버전 체크
-        for (int i = 0; i < 2; i++)
+        int[] minVersion = ConvertVersion(serverCondition.min_app_version);
+
+        for (int i = 0; i < _appVersionLength; i++)
         {
-            if (clientAppVersions[i] > serverAppVersions[i])//클라 버전이 패치서버 버전보다 높을 경우
+            if (clientAppVersions[i] > minVersion[i])//클라 버전이 패치서버 min 버전보다 높을 경우
             {
                 break;//빌드 버전이 낮지 않음을 확인했으니 오케이 다음으로.
             }
-            else if (clientAppVersions[i] < serverAppVersions[i])//클라 버전이 패치서버 버전 낮을 경우
+            else if (clientAppVersions[i] < minVersion[i])//클라 버전이 패치서버 버전 낮을 경우
             {
                 Callback callback = delegate ()
                 {
@@ -266,7 +298,7 @@ public class Patch : MonoBehaviour
         {
             int[] testerAppVersions = ConvertVersion(serverCondition.tester_app_version);
             //NativeBK.LogMSG("PatchServer testerAppVersions: " + serverCondition.tester_app_version);
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < _appVersionLength; i++)
             {
                 if (clientAppVersions[i] < testerAppVersions[i])//주의 testerAppVersions 과 같은 버전의 클라이언트는 테스터가 됨
                 {
@@ -323,45 +355,45 @@ public class Patch : MonoBehaviour
             }
         }
     }
-    int _serverPatchNumber = 0;
     private void CheckPatchVersion(ServerCondition serverCondition)
     {
 #if !UNITY_EDITOR && !USE_ASSET_BUNDLE
         return;
 #endif
-        _serverPatchNumber = serverCondition.patch_number;
-        int serverPatchNumberAll = RemakePatchNumber(serverCondition.app_version, _serverPatchNumber);
-
-        int minServerPatchNumber = serverCondition.min_patch_number;
-        int minServerPatchNumberAll = RemakePatchNumber(serverCondition.min_app_version, minServerPatchNumber);
-
-        int clientVersionNumber = ReadFileValue(_versionFilePath, 0);
+        int clientPatchNumber = ReadFileValue(_versionFilePath, 0);
         
         // clientPatchVersion 이 0이 아니라면 패치를 받은 상태인것, 0이면 설치후 한번도 패치받지 않은것
-        if (clientVersionNumber > 0)//한번이라도 패치받은 경우
+        if (clientPatchNumber > 0)//한번이라도 패치받은 경우
         {
-            if (clientVersionNumber < minServerPatchNumberAll)
+            if (clientPatchNumber < serverCondition.min_patch_number)
             {
-                // 최소 패치 버전보다 낮다면 1을 받는다.
-                clientVersionNumber = RemakePatchNumber(Application.version, 1); ;
+                // 최소 패치 넘버 보다 낮다면 1을 받는다.
+                clientPatchNumber = 1;
             }
 
-            if (clientVersionNumber > serverPatchNumberAll)
+            if (clientPatchNumber > serverCondition.patch_number)
             {
-                // 클라이언트 패치 버전이 이상함으로 모든 패치 파일을 다시 받고 버전을 갱신한다.
-                clientVersionNumber = 0;
+                // 클라이언트 패치 넘버가 이상함으로 모든 패치 파일을 다시 받고 버전을 갱신한다.
+                clientPatchNumber = 0;
             }
         }
 
         // 다운로드 해야 하는 상황
-        if (clientVersionNumber < serverPatchNumberAll)
+        if (clientPatchNumber < serverCondition.patch_number)
         {
-            StartCoroutine(CheckFileSize(clientVersionNumber, serverPatchNumberAll));
+            if(_baseUrl.Contains("https"))
+            {
+                StartCoroutine(CheckFileSizeHTTPS(clientPatchNumber, serverCondition.patch_number));
+            }
+            else
+            {
+                CheckFileSizeHTTP(clientPatchNumber, serverCondition.patch_number);
+            }
         }
         else
         {
 #if UNITY_EDITOR || USE_ASSET_BUNDLE
-            GInfo.patchNumber = _serverPatchNumber;
+            GInfo.patchNumber = clientPatchNumber;
 #endif
             _patchUI.SetStateText(Localization.Get("lastest_version"));
             _patchUI.ClearProgress();
@@ -370,20 +402,13 @@ public class Patch : MonoBehaviour
             StartCoroutine(LoadingLevel());
         }
     }
-    private int RemakePatchNumber(string appVersion, int patchNumber)
-    {
-        string[] s = appVersion.Split('.');
-        int f1 = int.Parse(s[0]) * 1000000;
-        int f2 = int.Parse(s[1]) * 1000;
-        return f1 + f2 + patchNumber;
-    }
-
-    IEnumerator CheckFileSize(int clientPatchNumberAll, int serverPatchNumberAll)
+    
+    IEnumerator CheckFileSizeHTTPS(int clientPatchNumber, int serverPatchNumber)
     {
         Callback callbackExtractPatchFile = delegate ()
         { //패치가 있으니 받겠냐는 버튼에 오케이 하면 호출
             _patchUI.StartLoopImage();
-            StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+            StartCoroutine(ExtractPatchFileHTTPS(clientPatchNumber, serverPatchNumber));
         };
 
         Callback callbackQuit = delegate ()
@@ -391,20 +416,20 @@ public class Patch : MonoBehaviour
             Application.Quit();
         };
 
-        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _baseUrl, filePath, serverPatchNumber, clientPatchNumber);
         Uri uri = new Uri(downloadUrl);
         using (UnityWebRequest uwr = UnityWebRequest.Get(uri))
         {
             uwr.method = UnityWebRequest.kHttpVerbHEAD;
             yield return uwr.SendWebRequest();
-            
+
             //Debug.Log(uwr.GetResponseHeader("content-length"));//파일 크기
             //Debug.Log(uwr.downloadedBytes);//실제로 다운로드된 건 없다는 증거
             _totalValue = int.Parse(uwr.GetResponseHeader("Content-Length"));
-            if(_totalValue > 0)
+            if (_totalValue > 0)
             {
                 //패치 확인 창 x 버튼 클릭시 패치가 받아지는 문제로 인해 callback 에 null을 넣는 것으로 수정, bk
-                _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", _totalValue / 1048576.0f)), callbackExtractPatchFile, null);
+                _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", _totalValue / 1048576.0f)), callbackExtractPatchFile, callbackQuit);
             }
             else
             {
@@ -414,16 +439,56 @@ public class Patch : MonoBehaviour
         }
 
     }
-    IEnumerator ExtractPatchFile(int clientPatchNumberAll, int serverPatchNumberAll)
+    private void CheckFileSizeHTTP(int clientPatchNumber, int serverPatchNumber)
+    {
+        Callback callbackExtractPatchFile = delegate ()
+        { //패치가 있으니 받겠냐는 버튼에 오케이 하면 호출
+            _patchUI.StartLoopImage();
+            StartCoroutine(ExtractPatchFileHTTP(clientPatchNumber, serverPatchNumber));
+        };
+
+        Callback callbackQuit = delegate ()
+        {
+            Application.Quit();
+        };
+
+        HttpWebResponse response = null;
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _baseUrl, filePath, serverPatchNumber, clientPatchNumber);
+        try
+        {
+            Uri uri = new Uri(downloadUrl);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.Method = "HEAD";
+            response = (HttpWebResponse)(request.GetResponse());
+        }
+        catch (WebException e)
+        {
+            Debug.Log(string.Format("{0}{1}{2}/{3}.zip", downloadUrl, filePath, serverPatchNumber, clientPatchNumber) + " doesn't exist: " + e.Message);
+        }
+
+        if (response != null)
+        {
+            //패치 확인 창 x 버튼 클릭시 패치가 받아지는 문제로 인해 callback 에 null을 넣는 것으로 수정, bk
+            //patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callback, callback);
+            _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callbackExtractPatchFile, callbackQuit);
+        }
+        else
+        {
+            _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), "", callbackExtractPatchFile, callbackQuit));
+        }
+
+    }
+
+    IEnumerator ExtractPatchFileHTTPS(int clientPatchNumber, int serverPatchNumber)
     {
         _patchUI.SetStateText(Localization.Get("state_check_availability"));
 
         // 다운로드 완료된 파일이 있는지 체크
-        string completeFilePath = string.Format("{0}/{1}_{2}", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
+        string completeFilePath = string.Format("{0}/{1}_{2}", Application.persistentDataPath, clientPatchNumber, serverPatchNumber);
         if (File.Exists(completeFilePath))
         {
             // CRC 정보 읽기
-            string crcUrl = string.Format("{0}{1}{2}/{3}.crc", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+            string crcUrl = string.Format("{0}{1}{2}/{3}.crc", _baseUrl, filePath, serverPatchNumber, clientPatchNumber);
             
             using (UnityWebRequest uwr = UnityWebRequest.Get(crcUrl))
             {
@@ -434,7 +499,7 @@ public class Patch : MonoBehaviour
                     //Debug.Log("CRC server download error: " + uwr.error);
                     Callback callback = delegate ()
                     {
-                        StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+                        StartCoroutine(ExtractPatchFileHTTPS(clientPatchNumber, serverPatchNumber));
                     };
 
                     ShowFailMessageBox(WebExceptionStatus.ConnectFailure, callback);
@@ -466,13 +531,13 @@ public class Patch : MonoBehaviour
 
                         // 버전 업데이트
                         _patchUI.SetStateText(Localization.Get("state_remove_file"));
-                        WriteFileValue(_versionFilePath, serverPatchNumberAll);
+                        WriteFileValue(_versionFilePath, serverPatchNumber);
 
                         // 패치 파일 삭제
                         TryRemoveFile(completeFilePath);
 
                         // 필요 없어진 파일제거
-                        string removeFilePath = string.Format("{0}/remove_{1}_{2}.txt", assetBundleDir, clientPatchNumberAll, serverPatchNumberAll);
+                        string removeFilePath = string.Format("{0}/remove_{1}_{2}.txt", assetBundleDir, clientPatchNumber, serverPatchNumber);
                         if (File.Exists(removeFilePath))
                         {
                             try
@@ -491,7 +556,7 @@ public class Patch : MonoBehaviour
                             TryRemoveFile(removeFilePath);
                         }
 
-                        GInfo.patchNumber = _serverPatchNumber;
+                        GInfo.patchNumber = serverPatchNumber;
                         _patchUI.SetStateText(Localization.Get("lastest_version"));
 
 
@@ -502,24 +567,115 @@ public class Patch : MonoBehaviour
                     {
                         TryRemoveFile(completeFilePath);
 
-                        StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+                        StartCoroutine(DownloadPatchFileHTTPS(clientPatchNumber, serverPatchNumber));
                     }
                 }
             }
         }
         else
         {
-            StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+            StartCoroutine(DownloadPatchFileHTTPS(clientPatchNumber, serverPatchNumber));
         }
     }
-    IEnumerator DownloadPatchFile(int clientPatchNumberAll, int serverPatchNumberAll)
+    IEnumerator ExtractPatchFileHTTP(int clientPatchNumber, int serverPatchNumber)
+    {
+        _patchUI.SetStateText(Localization.Get("state_check_availability"));
+
+        // 다운로드 완료된 파일이 있는지 체크
+        string completeFilePath = string.Format("{0}/{1}_{2}", Application.persistentDataPath, clientPatchNumber, serverPatchNumber);
+        if (File.Exists(completeFilePath))
+        {
+            // CRC 정보 읽기
+            string crcUrl = string.Format("{0}{1}{2}/{3}.crc", _baseUrl, filePath, serverPatchNumber, clientPatchNumber);
+            using (MemoryStream stream = new MemoryStream())
+            {
+                WaitForDownload state = HttpRequestDownloader.DownloadFile(crcUrl, stream);
+                yield return state;
+
+                if (!state.isDone)
+                {
+                    Callback callback = delegate ()
+                    {
+                        StartCoroutine(ExtractPatchFileHTTP(clientPatchNumber, serverPatchNumber));
+                    };
+
+                    ShowFailMessageBox(state.status, callback);
+                    yield break;
+                }
+
+                byte[] serverCrc = stream.ToArray();
+                byte[] clientCrc = AssetBundleUtility.ComputeHash(completeFilePath);
+
+                if (Utility.ByteArrayCompare(serverCrc, clientCrc))
+                {
+                    _patchUI.SetStateText(Localization.Get("state_apply_patch"));
+
+#if UNITY_DEBUG
+                    float start = Time.realtimeSinceStartup;
+#endif
+                    string assetBundleDir = Application.persistentDataPath + "/assetbundle";
+                    yield return ZipUtility.Decompression(completeFilePath, assetBundleDir, PlayerPrefs.GetInt(_applyPatchKey, 0), ExtractProgress);
+#if UNITY_DEBUG
+                    DLog.LogMSG("Extract elapsedTime=" + (Time.realtimeSinceStartup - start));
+#endif
+                    PlayerPrefs.SetInt(_applyPatchKey, 0);
+
+                    // 버전 업데이트
+                    _patchUI.SetStateText(Localization.Get("state_remove_file"));
+                    WriteFileValue(_versionFilePath, serverPatchNumber);
+
+                    // 패치 파일 삭제
+                    TryRemoveFile(completeFilePath);
+
+                    // 필요 없어진 파일제거
+                    string removeFilePath = string.Format("{0}/remove_{1}_{2}.txt", assetBundleDir, clientPatchNumber, serverPatchNumber);
+                    if (File.Exists(removeFilePath))
+                    {
+                        try
+                        {
+                            string[] removeFiles = File.ReadAllLines(removeFilePath);
+                            for (int i = 0; i < removeFiles.Length; ++i)
+                            {
+                                TryRemoveFile(assetBundleDir + "/" + removeFiles[i]);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            DLog.LogMSG(e.ToString());
+                        }
+
+                        TryRemoveFile(removeFilePath);
+                    }
+
+                    GInfo.patchNumber = serverPatchNumber;
+                    _patchUI.SetStateText(Localization.Get("lastest_version"));
+
+
+                    // 로그인 씬으로 이동
+                    StartCoroutine(LoadingLevel());
+                }
+                else
+                {
+                    TryRemoveFile(completeFilePath);
+
+                    StartCoroutine(DownloadPatchFileHTTP(clientPatchNumber, serverPatchNumber));
+                }
+            }
+        }
+        else
+        {
+            StartCoroutine(DownloadPatchFileHTTP(clientPatchNumber, serverPatchNumber));
+        }
+    }
+
+    IEnumerator DownloadPatchFileHTTPS(int clientPatchNumber, int serverPatchNumber)
     {
         PlayerPrefs.SetInt(_applyPatchKey, 0);
         _patchUI.SetStateText(Localization.Get("state_download_patch"));
         //받을 파일의 이름
-        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
+        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumber, serverPatchNumber);
         //받을 곳 URL
-        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _baseUrl, filePath, serverPatchNumber, clientPatchNumber);
 
 #if UNITY_DEBUG
         float start = Time.realtimeSinceStartup;
@@ -547,7 +703,7 @@ public class Patch : MonoBehaviour
                 //Debug.Log("Download saved to: " + downloadFilePath.Replace("/", "\\") + "\r\n" + uwr.error);
                 Callback callback = delegate ()
                 {
-                    StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+                    StartCoroutine(DownloadPatchFileHTTPS(clientPatchNumber, serverPatchNumber));
                 };
 
                 ShowFailMessageBox(WebExceptionStatus.ConnectFailure, callback);
@@ -562,52 +718,16 @@ public class Patch : MonoBehaviour
         string completeFilePath = downloadFilePath.Remove(downloadFilePath.Length - 1);
 
         TryMoveFile(downloadFilePath, completeFilePath);
-        StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+        StartCoroutine(ExtractPatchFileHTTPS(clientPatchNumber, serverPatchNumber));
     }
-
-    private void CheckFileSizeHTTP(int clientPatchNumberAll, int serverPatchNumberAll)
-    {
-        Callback callback = delegate ()
-        {
-            _patchUI.StartLoopImage();
-
-            StartCoroutine(ExtractPatchFileHTTP(clientPatchNumberAll, serverPatchNumberAll));
-        };
-
-
-        HttpWebResponse response = null;
-        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
-        try
-        {
-            Uri uri = new Uri(downloadUrl);
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-            request.Method = "HEAD";
-            response = (HttpWebResponse)(request.GetResponse());
-        }
-        catch (WebException e)
-        {
-            Debug.Log(string.Format("{0}{1}{2}/{3}.zip", downloadUrl, filePath, serverPatchNumberAll, clientPatchNumberAll) + " doesn't exist: " + e.Message);
-        }
-
-        if (response != null)
-        {
-            //패치 확인 창 x 버튼 클릭시 패치가 받아지는 문제로 인해 callback 에 null을 넣는 것으로 수정, bk
-            //patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callback, callback);
-            _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), string.Format("({0:0.0} MB)", response.ContentLength / 1048576.0f)), callback, null);
-        }
-        else
-        {
-            _patchUI.ShowMessageBoxOK(string.Format(Localization.Get("notice_new_patch"), "", callback, callback));
-        }
-    }
-    IEnumerator DownloadPatchFileHTTP(int clientPatchNumberAll, int serverPatchNumberAll)
+    IEnumerator DownloadPatchFileHTTP(int clientPatchNumber, int serverPatchNumber)
     {
         PlayerPrefs.SetInt(_applyPatchKey, 0);
         _patchUI.SetStateText(Localization.Get("state_download_patch"));
         //받을 파일의 이름
-        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
+        string downloadFilePath = string.Format("{0}/{1}_{2}_", Application.persistentDataPath, clientPatchNumber, serverPatchNumber);
         //받을 곳 URL
-        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
+        string downloadUrl = string.Format("{0}{1}{2}/{3}.zip", _baseUrl, filePath, serverPatchNumber, clientPatchNumber);
 
 #if UNITY_DEBUG
         float start = Time.realtimeSinceStartup;
@@ -621,7 +741,7 @@ public class Patch : MonoBehaviour
             {
                 Callback callback = delegate ()
                 {
-                    StartCoroutine(DownloadPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+                    StartCoroutine(DownloadPatchFileHTTP(clientPatchNumber, serverPatchNumber));
                 };
 
                 ShowFailMessageBox(state.status, callback);
@@ -635,98 +755,9 @@ public class Patch : MonoBehaviour
         string completeFilePath = downloadFilePath.Remove(downloadFilePath.Length - 1);
 
         TryMoveFile(downloadFilePath, completeFilePath);
-        StartCoroutine(ExtractPatchFile(clientPatchNumberAll, serverPatchNumberAll));
+        StartCoroutine(ExtractPatchFileHTTP(clientPatchNumber, serverPatchNumber));
     }
-    IEnumerator ExtractPatchFileHTTP(int clientPatchNumberAll, int serverPatchNumberAll)
-    {
-        _patchUI.SetStateText(Localization.Get("state_check_availability"));
-
-        // 다운로드 완료된 파일이 있는지 체크
-        string completeFilePath = string.Format("{0}/{1}_{2}", Application.persistentDataPath, clientPatchNumberAll, serverPatchNumberAll);
-        if (File.Exists(completeFilePath))
-        {
-            // CRC 정보 읽기
-            string crcUrl = string.Format("{0}{1}{2}/{3}.crc", _patchURL, filePath, serverPatchNumberAll, clientPatchNumberAll);
-            using (MemoryStream stream = new MemoryStream())
-            {
-                WaitForDownload state = HttpRequestDownloader.DownloadFile(crcUrl, stream);
-                yield return state;
-
-                if (!state.isDone)
-                {
-                    Callback callback = delegate ()
-                    {
-                        StartCoroutine(ExtractPatchFileHTTP(clientPatchNumberAll, serverPatchNumberAll));
-                    };
-
-                    ShowFailMessageBox(state.status, callback);
-                    yield break;
-                }
-
-                byte[] serverCrc = stream.ToArray();
-                byte[] clientCrc = AssetBundleUtility.ComputeHash(completeFilePath);
-
-                if ( Utility.ByteArrayCompare(serverCrc, clientCrc) )
-                {
-                    _patchUI.SetStateText(Localization.Get("state_apply_patch"));
-
-#if UNITY_DEBUG
-                    float start = Time.realtimeSinceStartup;
-#endif
-                    string assetBundleDir = Application.persistentDataPath + "/assetbundle";
-                    yield return ZipUtility.Decompression(completeFilePath, assetBundleDir, PlayerPrefs.GetInt(_applyPatchKey, 0), ExtractProgress);
-#if UNITY_DEBUG
-                    DLog.LogMSG("Extract elapsedTime=" + (Time.realtimeSinceStartup - start));
-#endif
-                    PlayerPrefs.SetInt(_applyPatchKey, 0);
-
-                    // 버전 업데이트
-                    _patchUI.SetStateText(Localization.Get("state_remove_file"));
-                    WriteFileValue(_versionFilePath, serverPatchNumberAll);
-
-                    // 패치 파일 삭제
-                    TryRemoveFile(completeFilePath);
-
-                    // 필요 없어진 파일제거
-                    string removeFilePath = string.Format("{0}/remove_{1}_{2}.txt", assetBundleDir, clientPatchNumberAll, serverPatchNumberAll);
-                    if(File.Exists(removeFilePath))
-                    {
-                        try
-                        {
-                            string[] removeFiles = File.ReadAllLines(removeFilePath);
-                            for ( int i = 0; i < removeFiles.Length; ++i )
-                            {
-                                TryRemoveFile(assetBundleDir + "/" + removeFiles[i]);
-                            }
-                        }
-                        catch(Exception e)
-                        {
-                            DLog.LogMSG(e.ToString());
-                        }
-
-                        TryRemoveFile(removeFilePath);
-                    }
-
-                    GInfo.patchNumber = _serverPatchNumber;
-                    _patchUI.SetStateText(Localization.Get("lastest_version"));
-
-
-                    // 로그인 씬으로 이동
-                    StartCoroutine(LoadingLevel());
-                }
-                else
-                {
-                    TryRemoveFile(completeFilePath);
-
-                    StartCoroutine(DownloadPatchFileHTTP(clientPatchNumberAll, serverPatchNumberAll));
-                }
-            }
-        }
-        else
-        {
-            StartCoroutine(DownloadPatchFileHTTP(clientPatchNumberAll, serverPatchNumberAll));
-        }
-    }
+    
 
     private int ReadFileValue(string path, int defaultValue)
     {
@@ -835,7 +866,7 @@ public class Patch : MonoBehaviour
     int[] ConvertVersion(string version)
     {
         string[] values = version.Trim().Split('.');
-        if (values.Length != 2)
+        if (values.Length != _appVersionLength)
         {
             return null;
         }
