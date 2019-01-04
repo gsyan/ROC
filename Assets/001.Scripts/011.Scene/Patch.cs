@@ -68,15 +68,23 @@ public class Patch : MonoBehaviour
 
         yield return ScreenBlinder.Instance.BlinderFadeOut();
 
-        if( _baseUrl.Contains("https") )
-        {
-            StartCoroutine(DownloadServerConditionHTTPS());
-        }
-        else
-        {
-            StartCoroutine(DownloadServerConditionHTTP());
-        }
+        //if( _baseUrl.Contains("https") )
+        //{
+        //    StartCoroutine(DownloadServerConditionHTTPS());
+        //}
+        //else
+        //{
+        //    StartCoroutine(DownloadServerConditionHTTP());
+        //}
+
         
+        _patchUI.ShowMessageBoxOK(
+            "iso: " + NativeBridge.LocaleData.iso + "\n" +
+            "code: " + NativeBridge.LocaleData.code + "\n" +
+            "name: " + NativeBridge.LocaleData.name + "\n" +
+            "lang: " + NativeBridge.LocaleData.lang + "\n"
+            );
+
         yield return 0;
     }
     public void SetFilePath()

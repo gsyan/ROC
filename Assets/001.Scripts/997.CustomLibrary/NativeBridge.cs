@@ -54,7 +54,7 @@ public class NativeBridge : MonoBehaviour
 #elif UNITY_ANDROID
         _activity = new AndroidJavaObject("com.bkst.mainpluginandroid.MainActivity");
         //GetGAIDFromNative();
-        //GetLocalDataFromNative();
+        GetLocalDataFromNative();
 #endif
     }
 
@@ -103,7 +103,9 @@ public class NativeBridge : MonoBehaviour
     public void GetLocalDataFromNative()
     {
 #if !UNITY_EDITOR && UNITY_ANDROID
-        _activity.Call("GetLocalesList");
+        //_activity.Call("GetLocalesList");
+        AndroidJavaClass p = new AndroidJavaClass("com.bkst.pluginbk.LocaleBK");
+        p.CallStatic("GetLocaleList");   
 #elif UNITY_EDITOR
 
 #endif
@@ -170,4 +172,19 @@ public class NativeBridge : MonoBehaviour
     #endregion WebView
 
 
+    #region Test
+
+    public string PTest()
+    {
+        AndroidJavaClass p = new AndroidJavaClass("com.bkst.bkplugin.PluginClass");
+        string res = p.CallStatic<string>("UnityCall", "testcall");
+        return res;
+    }
+
+
+
+    #endregion
+
+
 }
+

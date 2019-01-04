@@ -13,6 +13,7 @@ public class TheFirst : MonoBehaviour
         GameSettings.Instance.Apply();
 
         NativeBridge.Instance.Init();
+        //NativeBridge.Instance.GetLocalDataFromNative();
 
         SceneManager.LoadScene("CI");
     }

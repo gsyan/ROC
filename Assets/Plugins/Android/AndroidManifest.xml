@@ -1,43 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.bkst.roctest">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.bkst.rocdev">
+  <!--안드로이드 스튜디오 3.2.1 추천.-->
+  <uses-sdk android:minSdkVersion="15" android:targetSdkVersion="28" />
 
-    <!--unity5.6.4p3 에서는 targetSdkVersion 을 26(이상)으로 해야 한다.-->
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="26" />
+  <uses-permission android:name="android.permission.INTERNET" />
       
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-
-
-        <!--네이티브 플러그인의 패키지 명은 프로젝트의 패키지명과 달라도 상관이 없다-->
-        <activity android:name="com.bkst.mainpluginandroid.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-      
-        <!--<service
-              android:name="com.bkst.roc.MyFirebaseMessagingService">
-              <intent-filter>
-                  <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-              </intent-filter>
-        </service>
-
-        <service
-            android:name="com.bkst.roc.MyFirebaseInstanceIDService">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-            </intent-filter>
-        </service>-->
-      
-      
-
-
-    </application>
+  <application
+    android:allowBackup="true"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:supportsRtl="true"
+    android:theme="@style/AppTheme">
+    
+    <!--네이티브 플러그인의 패키지 명은 프로젝트의 패키지명과 달라도 상관이 없다-->
+    <activity android:name="com.bkst.mainpluginandroid.MainActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    
+  </application>
 
 </manifest>
