@@ -13,7 +13,8 @@
     android:theme="@style/AppTheme">
     
     <!--네이티브 플러그인의 패키지 명은 프로젝트의 패키지명과 달라도 상관이 없다-->
-    <activity android:name="com.bkst.mainpluginandroid.MainActivity">
+    <!--<activity android:name="com.bkst.mainpluginandroid.MainActivity">-->
+    <activity android:name="com.bkst.pluginbk.Bridge">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

@@ -321,8 +321,6 @@ public class UIPanelLogin : UIPanelBase
             }
         }
         
-        
-        //DLog.LogMSG(string.Format("Login usn={0} deviceUniqueIdentifier(adid)={1}", usn, BKUtil.Instance.GAID));
         DLog.LogMSG(string.Format("Login userId = {0} / deviceUniqueIdentifier = {1}", userId, SystemInfo.deviceUniqueIdentifier));
         
         //로그인 시도

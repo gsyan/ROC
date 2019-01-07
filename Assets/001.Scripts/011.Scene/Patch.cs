@@ -68,7 +68,7 @@ public class Patch : MonoBehaviour
 
         yield return ScreenBlinder.Instance.BlinderFadeOut();
 
-        //if( _baseUrl.Contains("https") )
+        //if (_baseUrl.Contains("https"))
         //{
         //    StartCoroutine(DownloadServerConditionHTTPS());
         //}
@@ -77,13 +77,16 @@ public class Patch : MonoBehaviour
         //    StartCoroutine(DownloadServerConditionHTTP());
         //}
 
-        
         _patchUI.ShowMessageBoxOK(
             "iso: " + NativeBridge.LocaleData.iso + "\n" +
             "code: " + NativeBridge.LocaleData.code + "\n" +
             "name: " + NativeBridge.LocaleData.name + "\n" +
             "lang: " + NativeBridge.LocaleData.lang + "\n"
             );
+
+        NativeBridge.Instance.Toast("This is an call to native android!");
+        NativeBridge.Log("Just a log for test");
+        NativeBridge.Log("ID: " + SystemInfo.deviceUniqueIdentifier);
 
         yield return 0;
     }
@@ -239,9 +242,9 @@ public class Patch : MonoBehaviour
             GInfo.serverType = serverCondition.server_type;
             GInfo.serverGroup = serverCondition.server_group;
 
-            // check test app version || tester GAID  ==========================================================================
+            // check test app version || tester device ID  ==========================================================================
             bool isTester = CheckIsTestAppVersion(clientAppVersions, serverCondition);
-            isTester = CheckIsTesterGAID(isTester, serverCondition);
+            isTester = CheckIsTesterDeviceID(isTester, serverCondition);
 
             //check server inspection
             CheckServerInspection(isTester, serverCondition);
@@ -318,14 +321,14 @@ public class Patch : MonoBehaviour
 
         return false;
     }
-    private bool CheckIsTesterGAID(bool isTester, ServerCondition serverCondition)
+    private bool CheckIsTesterDeviceID(bool isTester, ServerCondition serverCondition)
     {
         if (!isTester)
         {
-            //NativeBridge.SetGAID("e099125a-4097-4af9-af5b-0154cb92e4ad");//인위적으로 등록된 테스터의 광고아이디 삽입
+            
             for (int i = 0; i < serverCondition.tester.Length; ++i)
             {
-                if (string.Compare(serverCondition.tester[i], NativeBridge.GAID) == 0)
+                if (string.Compare(serverCondition.tester[i], SystemInfo.deviceUniqueIdentifier) == 0)
                 {
                     return true;
                 }

@@ -23,6 +23,8 @@ android {
 }
 
 dependencies {
-//    compileOnly fileTree(include: ['*.jar'], dir: 'libs')
+    //    compileOnly fileTree(include: ['*.jar'], dir: 'libs')
     compileOnly files('libs/classes.jar')
+    implementation 'com.google.android.gms:play-services-ads:17.1.2'
+
 }

@@ -7,7 +7,9 @@ import com.unity3d.player.UnityPlayer;
 
 public class LocaleBK {
 
-    static public void GetLocaleList() {
+    public static void GetLocaleList() {
+        Log.d("bk", "GetLocaleList");
+
         Locale lo = Locale.getDefault();
 
         String iso = lo.getISO3Country();
@@ -22,6 +24,7 @@ public class LocaleBK {
             localeData.put("name", name);
             localeData.put("lang", lang);
             UnityPlayer.UnitySendMessage("_NativeBridge", "SetLocale", localeData.toString());
+            Log.d("bk", "UnitySendMessage -> _NativeBridge / SetLocale");
         }
         catch(Exception e)
         {

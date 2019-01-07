@@ -35,79 +35,43 @@ public class NativeBridge : MonoBehaviour
         }
     }
 
-#if UNITY_ANDROID
-    static private AndroidJavaObject _activity = null;
 
-    //web view 예제 변수 잘 되면 _activity 를 _currentActivity으로 대체한다
-    private AndroidJavaClass _player;
-    private AndroidJavaObject _currentActivity;
-    /////
-    
+    static private AndroidJavaObject _activity = null;//currentActivity 용 변수
 
-#endif
-
-    
     public void Init()
     {
 #if UNITY_EDITOR
 
 #elif UNITY_ANDROID
-        _activity = new AndroidJavaObject("com.bkst.mainpluginandroid.MainActivity");
-        //GetGAIDFromNative();
+        AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        _activity = jc.GetStatic<AndroidJavaObject>("currentActivity");
+        
         GetLocalDataFromNative();
 #endif
     }
 
-    public static void LogMSG(string str)
+    public static void Log(string msg)
     {
-#if UNITY_ANDROID
-        _activity.Call("Log", str);
-#endif
-
-    }
-
-
-
-
-
-    //구글 광고 아이디 관련
-    #region GAID
-    private static string _gaid;
-    public void GetGAIDFromNative()
-    {
-        DLog.LogMSG("NativeBridge / GetGAIDFromNative");
-        AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-        AndroidJavaObject activity = jc.GetStatic<AndroidJavaObject>("currentActivity");
-        activity.CallStatic("GetGAID", gameObject.name, "SetGAID");
-    }
-    public void SetGAID(string gaid)//네이티브에서 호출되는 함수
-    {
-        _gaid = gaid;
-    }
-    public static string GAID
-    {
-        get
-        {
 #if UNITY_EDITOR
-            return "Unity_Editor_GAID";//유니티면 
+
 #elif UNITY_ANDROID
-            return _gaid;
+        _activity.Call("LogMSG", msg);
 #endif
-        }
+
     }
-    #endregion GAID
+
+
 
     //지역 관련
     #region Locale
     private static LocaleData _localeData;
     public void GetLocalDataFromNative()
     {
-#if !UNITY_EDITOR && UNITY_ANDROID
-        //_activity.Call("GetLocalesList");
-        AndroidJavaClass p = new AndroidJavaClass("com.bkst.pluginbk.LocaleBK");
-        p.CallStatic("GetLocaleList");   
-#elif UNITY_EDITOR
+#if UNITY_EDITOR
 
+#elif UNITY_ANDROID
+        AndroidJavaClass jc = new AndroidJavaClass("com.bkst.pluginbk.LocaleBK");
+        jc.CallStatic("GetLocaleList");
 #endif
     }
     public void SetLocale(string json)//call from native
@@ -150,38 +114,38 @@ public class NativeBridge : MonoBehaviour
 
     public void OpenWebView(string url)
     {
-        openNativeWebViewWithURL(url);
+        OpenNativeWebViewWithURL(url);
     }
-#if UNITY_ANDROID
-    public void openNativeWebViewWithURL(string url)
+#if UNITY_EDITOR
+    public void OpenNativeWebViewWithURL(string url) { }
+#elif UNITY_ANDROID
+    public void OpenNativeWebViewWithURL(string url)
     {
-        if(_player == null && _currentActivity == null)
-        {
-            _player = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            _currentActivity = _player.GetStatic<AndroidJavaObject>("currentActivity");
-        }
-        _currentActivity.Call("openNativeWebView", new string[] { url });
+        _activity.Call("OpenNativeWebView", new string[] { url });
     }
 #elif UNITY_IPHONE
-    [DllImport("__Internal")] public static extern void openNativeWebViewWithURL(string aParam);
-#else
-    public void openNativeWebViewWithURL(string url) { }
+    [DllImport("__Internal")] public static extern void OpenNativeWebViewWithURL(string aParam);
 #endif
-
-
+    
     #endregion WebView
 
 
-    #region Test
+    #region Toast
 
-    public string PTest()
+    public void Toast(string meg)
     {
-        AndroidJavaClass p = new AndroidJavaClass("com.bkst.bkplugin.PluginClass");
-        string res = p.CallStatic<string>("UnityCall", "testcall");
-        return res;
+#if UNITY_EDITOR
+
+#elif UNITY_ANDROID
+		object[] parameters = new object[2];
+        parameters[0] = _activity;
+        parameters[1] = meg;
+        _activity.Call("ToastString", parameters);
+#elif UNITY_IPHONE
+
+#endif
+
     }
-
-
 
     #endregion
 
