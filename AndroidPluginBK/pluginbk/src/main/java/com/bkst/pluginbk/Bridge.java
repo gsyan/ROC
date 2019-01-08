@@ -26,8 +26,6 @@ public class Bridge extends UnityPlayerActivity {
     }
 
 
-
-
     public void ToastString(final Context ctx, final String message)
     {
         Log.d("bk", "Bridge / ToastString ");
