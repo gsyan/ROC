@@ -9,8 +9,6 @@ using UnityEngine.SceneManagement;//SceneManager
 
 public class Login : MonoBehaviour
 {
-    public ServerType serverType;
-    public int serverGroup = 0;
     //public bool showPrologue;
     //public bool showUITutorial;
     private GameEscape _escape = new GameEscape();
@@ -45,17 +43,10 @@ public class Login : MonoBehaviour
     
     private void ShowPanelLogin()
     {
-        Transform panelLogin = BKST.UISystem.Instance.ShowPanel("Panel Login");
+        Transform panelLogin = UISystem.Instance.ShowPanel("Panel Login");
         if(panelLogin != null)
         {
-            if( GInfo.serverType != ServerType.None )
-            {
-                serverType = GInfo.serverType;
-                serverGroup = GInfo.serverGroup;
-            }
-            DLog.LogMSG("serverType: " + serverType + " // serverGroup: " + serverGroup);
-
-            panelLogin.GetComponent<UIPanelLogin>().Setup(serverType, serverGroup);
+            panelLogin.GetComponent<UIPanelLogin>().Setup();
         }
 
 

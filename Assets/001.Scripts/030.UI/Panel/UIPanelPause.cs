@@ -27,7 +27,7 @@ public class UIPanelPause : UIPanelBase
     public void Resume()
     {
         GameTime.Resume();
-        BKST.UISystem.Instance.HidePanel(transform, false);
+        UISystem.Instance.HidePanel(transform, false);
     }
 
     public void Exit()
@@ -39,11 +39,11 @@ public class UIPanelPause : UIPanelBase
         {
             _exitCallback();
             _exitCallback = null;
-            BKST.UISystem.Instance.HidePanel(transform, false);
+            UISystem.Instance.HidePanel(transform, false);
         }
         else
         {
-            BKST.UISystem.Instance.SetInputState(false);
+            UISystem.Instance.SetInputState(false);
             StartCoroutine(LoadingLevel());
         }
     }

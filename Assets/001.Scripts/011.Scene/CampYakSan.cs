@@ -32,8 +32,8 @@ public class CampYakSan : GameField
         StartCampProcessor();
 
 
-        BKST.UISystem.Instance.ShowPanel(GlobalValues.PANEL_ASSET);
-        Transform tm = BKST.UISystem.Instance.ShowPanel(GlobalValues.PANEL_MAIN);
+        UISystem.Instance.ShowPanel(GlobalValues.PANEL_ASSET);
+        Transform tm = UISystem.Instance.ShowPanel(GlobalValues.PANEL_MAIN);
         if(tm != null)
         {
             UIPanelMain panelMain = tm.GetComponent<UIPanelMain>();
@@ -98,7 +98,7 @@ public class CampYakSan : GameField
 
     public void ShowFleetManagement()
     {
-        Transform tm = BKST.UISystem.Instance.ShowPanel(GlobalValues.PANEL_MANAGE_FLEET);
+        Transform tm = UISystem.Instance.ShowPanel(GlobalValues.PANEL_MANAGE_FLEET);
         if (tm != null)
         {
             UIPanelManageFleet panelManageFleet = tm.GetComponent<UIPanelManageFleet>();

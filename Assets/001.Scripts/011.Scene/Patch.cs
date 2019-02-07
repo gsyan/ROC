@@ -68,25 +68,14 @@ public class Patch : MonoBehaviour
 
         yield return ScreenBlinder.Instance.BlinderFadeOut();
 
-        //if (_baseUrl.Contains("https"))
-        //{
-        //    StartCoroutine(DownloadServerConditionHTTPS());
-        //}
-        //else
-        //{
-        //    StartCoroutine(DownloadServerConditionHTTP());
-        //}
-
-        _patchUI.ShowMessageBoxOK(
-            "iso: " + NativeBridge.LocaleData.iso + "\n" +
-            "code: " + NativeBridge.LocaleData.code + "\n" +
-            "name: " + NativeBridge.LocaleData.name + "\n" +
-            "lang: " + NativeBridge.LocaleData.lang + "\n"
-            );
-
-        NativeBridge.Instance.Toast("This is an call to native android!");
-        NativeBridge.Log("Just a log for test");
-        NativeBridge.Log("ID: " + SystemInfo.deviceUniqueIdentifier);
+        if (_baseUrl.Contains("https"))
+        {
+            StartCoroutine(DownloadServerConditionHTTPS());
+        }
+        else
+        {
+            StartCoroutine(DownloadServerConditionHTTP());
+        }
 
         yield return 0;
     }
@@ -239,9 +228,6 @@ public class Patch : MonoBehaviour
             // 앱 스토어에 새 버전이 있음을 UI로 알리고, 유저가 확인하면 해당 마켓으로 리다이랙션 및 앱 종료,
             CheckUpdateApp(clientAppVersions, serverCondition);
 
-            GInfo.serverType = serverCondition.server_type;
-            GInfo.serverGroup = serverCondition.server_group;
-
             // check test app version || tester device ID  ==========================================================================
             bool isTester = CheckIsTestAppVersion(clientAppVersions, serverCondition);
             isTester = CheckIsTesterDeviceID(isTester, serverCondition);
@@ -368,9 +354,16 @@ public class Patch : MonoBehaviour
     }
     private void CheckPatchVersion(ServerCondition serverCondition)
     {
-#if !UNITY_EDITOR && !USE_ASSET_BUNDLE
+#if !USE_ASSET_BUNDLE
+        StartCoroutine(LoadingLevel());
         return;
 #endif
+        if (!useAssetbundle)
+        {
+            StartCoroutine(LoadingLevel());
+            return;
+        }
+
         int clientPatchNumber = ReadFileValue(_versionFilePath, 0);
         
         // clientPatchVersion 이 0이 아니라면 패치를 받은 상태인것, 0이면 설치후 한번도 패치받지 않은것
@@ -403,9 +396,7 @@ public class Patch : MonoBehaviour
         }
         else
         {
-#if UNITY_EDITOR || USE_ASSET_BUNDLE
             GInfo.patchNumber = clientPatchNumber;
-#endif
             _patchUI.SetStateText(Localization.Get("lastest_version"));
             _patchUI.ClearProgress();
 
@@ -901,7 +892,7 @@ public class Patch : MonoBehaviour
         yield return ScreenBlinder.Instance.BlinderFadeIn();
         
         
-        BKST.UISystem.Instance.RemoveAll();//bk uisystem 오브젝트까지 삭제, 이후 리소스 리셋 완료 하고 나서 ui 생성
+        UISystem.Instance.RemoveAll();//bk uisystem 오브젝트까지 삭제, 이후 리소스 리셋 완료 하고 나서 ui 생성
         yield return null;
 
         AssetBundleManager.Release();

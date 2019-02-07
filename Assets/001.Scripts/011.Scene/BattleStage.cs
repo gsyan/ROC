@@ -33,7 +33,7 @@ public class BattleStage : GameField
 
         //UISystem.Instance.ShowPanel(GlobalValues.PANEL_ASSET);
 
-        Transform tm = BKST.UISystem.Instance.ShowPanel(GlobalValues.PANEL_MAIN);
+        Transform tm = UISystem.Instance.ShowPanel(GlobalValues.PANEL_MAIN);
         if (tm != null)
         {
             UIPanelMain panelMain = tm.GetComponent<UIPanelMain>();

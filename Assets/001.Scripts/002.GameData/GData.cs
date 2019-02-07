@@ -233,8 +233,6 @@ public class GData
                 int p = 0;
                 ServerData data = new ServerData();
 
-                data.type = (ServerType)Enum.Parse(typeof(ServerType), columns[p++]);
-                data.group = int.Parse(columns[p++]);
                 data.name = columns[p++];
                 data.address = columns[p++];
                 data.port = int.Parse(columns[p++]);
@@ -472,21 +470,10 @@ public class GData
 
 
 
-    public List<ServerData> GetServerList(ServerType serverType, int serverGroup)
+    public List<ServerData> GetServerList()
     {
-        List<ServerData> list = new List<ServerData>();
-        for(int i=0;i<_serverList.Count; ++i)
-        {
-            if(_serverList[i].type == serverType && _serverList[i].group == serverGroup)
-            {
-                list.Add(_serverList[i]);
-            }
-        }
-        return list;
+        return _serverList;
     }
-
-
-
 
 
 
@@ -519,8 +506,6 @@ public class GData
 [Serializable]
 public class ServerData
 {
-    public ServerType type;
-    public int group;
     public string name;
     public string address;
     public int port;

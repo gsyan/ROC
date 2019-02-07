@@ -40,7 +40,7 @@ public class UIButtonPause : MonoBehaviour
                 exitText = Localization.Get("exit");
             }
 
-            Transform tm = BKST.UISystem.Instance.ShowPanel("Panel Pause");
+            Transform tm = UISystem.Instance.ShowPanel("Panel Pause");
             if(tm != null)
             {
                 tm.GetComponent<UIPanelPause>().Setup(resumeText, exitText, onExit);

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
+
 public partial class Utility
 {
     #region Game
@@ -1218,9 +1219,10 @@ public partial class Utility
     #region Application System
     //SystemLanguage sl = Application.systemLanguage;//참고
     //RuntimePlatform rp = Application.platform;//참고
-    
+
 
     #endregion Application System
+
 
     #region etc
     //public Dictionary<string, Sprite> spriteDic = new Dictionary<string, Sprite>();

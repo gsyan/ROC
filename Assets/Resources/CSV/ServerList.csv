@@ -1,6 +1,6 @@
-ServerType,Group,Name,Address,Port
-Dev,0,Work Server,192.168.0.21,30030
-Dev,0,Dev Server,192.168.0.13,20030
-Dev,0,Test Server,192.168.0.12,40030
-Dev,0,QA Server,175.124.227.37,40030
-Dev,0,Live Server,175.124.227.31,40030
+Name,Address,Port
+Work,192.168.0.21,30030
+Dev,192.168.0.13,20030
+Test,192.168.0.12,40030
+QA,175.124.227.37,40030
+Live,175.124.227.31,40030

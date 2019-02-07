@@ -92,7 +92,7 @@ public class GameEscape
     {
         if( CheckOkEscape() )
         {
-            Transform tm = BKST.UISystem.Instance.FindPanel("Panel Pause");
+            Transform tm = UISystem.Instance.FindPanel("Panel Pause");
             if(tm != null && tm.gameObject.activeSelf)
             {
                 UIPanelPause pp = tm.GetComponent<UIPanelPause>();
@@ -112,7 +112,7 @@ public class GameEscape
     {
         if( CheckOkEscape() )
         {
-            Transform tm = BKST.UISystem.Instance.FindPanel("Panel Lobby PVP");
+            Transform tm = UISystem.Instance.FindPanel("Panel Lobby PVP");
             if(tm != null && tm.gameObject.activeSelf)
             {
                 UIPanelLobbyPVP pp = tm.GetComponent<UIPanelLobbyPVP>();
@@ -138,7 +138,7 @@ public class GameEscape
 
             //if (TutorialController.isProgress) return false;//튜토리얼 상태라면 false, 아니라면 다음줄 검사
             
-            if (BKST.UISystem.Instance.IsExistToHide()) return false;//UISystem.instance.Escape() 은 나가기 버튼 눌렀을때 더 이상 닫을 UI 없는가? 를 알아보는 메소드, 있다면 그걸 닫고 false, 없다면 다음줄 검사
+            if (UISystem.Instance.IsExistToHide()) return false;//UISystem.instance.Escape() 은 나가기 버튼 눌렀을때 더 이상 닫을 UI 없는가? 를 알아보는 메소드, 있다면 그걸 닫고 false, 없다면 다음줄 검사
 
             return true;//최종적으로 게임을 나가겠냐는 UI를 노출
         }

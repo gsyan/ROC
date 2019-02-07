@@ -353,17 +353,6 @@ public enum ChatType
     Guild = 3       // 길드
 }
 
-public enum ServerType
-{
-    None,
-    Local,
-    Dev,            // 개발용
-    Staging,        
-    Production,     // 상용
-    Custom,
-    Max,
-}
-
 public enum CurrencyType
 {
     None = 0,

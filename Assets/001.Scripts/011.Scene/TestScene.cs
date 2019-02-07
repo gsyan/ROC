@@ -17,9 +17,9 @@ public class TestScene : MonoBehaviour
     {
         GInfo.SetupTest();
 
-        BKST.UISystem.Instance.SetInputState(true);
+        UISystem.Instance.SetInputState(true);
 
-        //BKST.UISystem.Instance.ShowPanel("Panel Asset");
+        //UISystem.Instance.ShowPanel("Panel Asset");
 
         string filePath = Application.dataPath.Replace("Assets", string.Empty) + "TestData" + ".txt";
         Utility.CreateDirectory(filePath);
@@ -38,43 +38,43 @@ public class TestScene : MonoBehaviour
 	void Update () {
         if(Input.GetKeyUp(KeyCode.Alpha1))
         {
-            BKST.UISystem.Instance.ShowPanel("Panel Asset");
+            UISystem.Instance.ShowPanel("Panel Asset");
             panelName = "Panel Asset";
         }
         if (Input.GetKeyUp(KeyCode.Alpha2))
         {
-            BKST.UISystem.Instance.ShowPanel("Panel BattleMenu");
+            UISystem.Instance.ShowPanel("Panel BattleMenu");
             panelName = "Panel BattleMenu";
         }
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
-            BKST.UISystem.Instance.ShowPanel("Panel Connecting");
+            UISystem.Instance.ShowPanel("Panel Connecting");
             panelName = "Panel Connecting";
         }
         if (Input.GetKeyUp(KeyCode.Alpha4))
         {
-            BKST.UISystem.Instance.ShowPanel("Panel Loading");
+            UISystem.Instance.ShowPanel("Panel Loading");
             panelName = "Panel Loading";
         }
         if (Input.GetKeyUp(KeyCode.Alpha5))
         {
-            BKST.UISystem.Instance.ShowPanel("Panel Login");
+            UISystem.Instance.ShowPanel("Panel Login");
             panelName = "Panel Login";
         }
         if (Input.GetKeyUp(KeyCode.Alpha6))
         {
-            BKST.UISystem.Instance.ShowPanel("Panel ManageFleet");
+            UISystem.Instance.ShowPanel("Panel ManageFleet");
             panelName = "Panel ManageFleet";
         }
         if (Input.GetKeyUp(KeyCode.Alpha7))
         {
-            BKST.UISystem.Instance.ShowPanel("Panel MessageBox");
+            UISystem.Instance.ShowPanel("Panel MessageBox");
             panelName = "Panel MessageBox";
         }
         
         if (Input.GetKeyUp(KeyCode.S))
         {
-            BKST.UISystem.Instance.HidePanel(panelName, false);
+            UISystem.Instance.HidePanel(panelName, false);
         }
 
 

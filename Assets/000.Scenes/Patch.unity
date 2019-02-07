@@ -156,4 +156,4 @@ MonoBehaviour:
   urlType: 1
   address: http://192.168.70.145
   filePath: /
-  useAssetbundle: 1
+  useAssetbundle: 0

@@ -62,10 +62,10 @@ public class UIPanelLogin : UIPanelBase
         _loginButtonGuest.SetActive(false);
     }
 
-    public void Setup(ServerType serverType, int serverGroup)
+    public void Setup()
     {
-        //ServerList.csv 내용중 type, group 같은 것 추려서 리턴
-        _serverlist = GData.Instance.GetServerList(serverType, serverGroup);
+        //ServerList.csv 내용 리턴
+        _serverlist = GData.Instance.GetServerList();
         if (_serverlist.Count <= 0) { return; }
 
         //서버선택 ui 세팅
@@ -76,7 +76,9 @@ public class UIPanelLogin : UIPanelBase
             od.text = Localization.Get(_serverlist[i].name);
             serverDropDown.options.Add(od);
         }
+
         
+
         //현재 선택된 서버 ui 세팅
         int index = PlayerPrefsManager.Instance.Last_Selected_Server;
 
@@ -95,12 +97,11 @@ public class UIPanelLogin : UIPanelBase
         }
 
         serverDropDown.value = index;
-
+        
         _address = _serverlist[index].address;
         _port = _serverlist[index].port;
-        DLog.LogMSG("server index: " + index + "// address: " + _address + "// port: " + _port);
-
-
+        DLog.LogMSG("server: " + _serverlist[index].name + "// address: " + _address + "// port: " + _port);
+        
 #if GAMESERVER_QA || GAMESERVER_LIVE// server 한정 버전의 경우 자동으로 TryConnect()
         TryConnect();
 #endif

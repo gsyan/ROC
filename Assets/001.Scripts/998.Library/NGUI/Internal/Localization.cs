@@ -1,31 +1,5 @@
-//----------------------------------------------
-//            NGUI: Next-Gen UI kit
-// Copyright © 2011-2016 Tasharen Entertainment
-//----------------------------------------------
-
 using UnityEngine;
 using System.Collections.Generic;
-
-/// <summary>
-/// Localization manager is able to parse localization information from text assets.
-/// Using it is simple: text = Localization.Get(key), or just add a UILocalize script to your labels.
-/// You can switch the language by using Localization.language = "French", for example.
-/// This will attempt to load the file called "French.txt" in the Resources folder,
-/// or a column "French" from the Localization.csv file in the Resources folder.
-/// If going down the TXT language file route, it's expected that the file is full of key = value pairs, like so:
-/// 
-/// LABEL1 = Hello
-/// LABEL2 = Music
-/// Info = Localization Example
-/// 
-/// In the case of the CSV file, the first column should be the "KEY". Other columns
-/// should be your localized text values, such as "French" for the first row:
-/// 
-/// KEY,English,French
-/// LABEL1,Hello,Bonjour
-/// LABEL2,Music,Musique
-/// Info,"Localization Example","Par exemple la localisation"
-/// </summary>
 
 public static class Localization
 {
@@ -78,7 +52,7 @@ public static class Localization
 	{
 		get
 		{
-			if (!localizationHasBeenSet) LoadDictionary(PlayerPrefs.GetString("Language", "English"));
+			if (!localizationHasBeenSet) LoadDictionary(PlayerPrefs.GetString("language", "english"));
 			return mDictionary;
 		}
 		set
@@ -96,7 +70,7 @@ public static class Localization
 	{
 		get
 		{
-			if (!localizationHasBeenSet) LoadDictionary(PlayerPrefs.GetString("Language", "English"));
+			if (!localizationHasBeenSet) LoadDictionary(PlayerPrefs.GetString("language", "english"));
 			return mLanguages;
 		}
 	}
@@ -111,7 +85,7 @@ public static class Localization
 		{
 			if (string.IsNullOrEmpty(mLanguage))
 			{
-				mLanguage = PlayerPrefs.GetString("Language", "English");
+				mLanguage = PlayerPrefs.GetString("language", "english");
 				LoadAndSelect(mLanguage);
 			}
 			return mLanguage;
@@ -139,10 +113,10 @@ public static class Localization
 		{
 			if (loadFunction == null)
 			{
-				TextAsset asset = Resources.Load<TextAsset>("Localization");
+				TextAsset asset = Resources.Load<TextAsset>("Localization/localization");
 				if (asset != null) bytes = asset.bytes;
 			}
-			else bytes = loadFunction("Localization");
+			else bytes = loadFunction("Localization/localization");
 			localizationHasBeenSet = true;
 		}
 
@@ -187,7 +161,7 @@ public static class Localization
 		// Either the language is null, or it wasn't found
 		mOldDictionary.Clear();
 		mDictionary.Clear();
-		if (string.IsNullOrEmpty(value)) PlayerPrefs.DeleteKey("Language");
+		if (string.IsNullOrEmpty(value)) PlayerPrefs.DeleteKey("language");
 		return false;
 	}
 
@@ -279,7 +253,7 @@ public static class Localization
 
 			if (!localizationHasBeenSet)
 			{
-				mLanguage = PlayerPrefs.GetString("Language", header[0]);
+				mLanguage = PlayerPrefs.GetString("language", header[0]);
 				localizationHasBeenSet = true;
 			}
 
@@ -432,7 +406,7 @@ public static class Localization
 				mOldDictionary.Clear();
 				mLanguageIndex = i;
 				mLanguage = language;
-				PlayerPrefs.SetString("Language", mLanguage);
+				PlayerPrefs.SetString("language", mLanguage);
 				if (onLocalize != null) onLocalize();
 				//UIRoot.Broadcast("OnLocalize");
 				return true;
@@ -448,7 +422,7 @@ public static class Localization
 	static public void Set (string languageName, Dictionary<string, string> dictionary)
 	{
 		mLanguage = languageName;
-		PlayerPrefs.SetString("Language", mLanguage);
+		PlayerPrefs.SetString("language", mLanguage);
 		mOldDictionary = dictionary;
 		localizationHasBeenSet = true;
 		mLanguageIndex = -1;
@@ -479,7 +453,7 @@ public static class Localization
 		if (string.IsNullOrEmpty(key)) return null;
 
 		// Ensure we have a language to work with
-		if (!localizationHasBeenSet) LoadDictionary(PlayerPrefs.GetString("Language", "English"));
+		if (!localizationHasBeenSet) LoadDictionary(PlayerPrefs.GetString("language", "english"));
 
 		if (mLanguages == null)
 		{
@@ -550,7 +524,7 @@ public static class Localization
 	static public bool Exists (string key)
 	{
 		// Ensure we have a language to work with
-		if (!localizationHasBeenSet) language = PlayerPrefs.GetString("Language", "english");
+		if (!localizationHasBeenSet) language = PlayerPrefs.GetString("language", "english");
 
 #if UNITY_IPHONE || UNITY_ANDROID
 		string mobKey = key + " Mobile";
