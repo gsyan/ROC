@@ -35,14 +35,24 @@ public class UILocalizeEditor : Editor
         GUILayout.BeginHorizontal();
         
         SerializedProperty sp = Utility.DrawProperty("Key", serializedObject, "key");
+
+        string key = sp.stringValue;
+        bool isPresent = (_keyList != null) && _keyList.Contains(key);
+        GUI.color = isPresent ? Color.green : Color.red;
+        GUILayout.BeginVertical(GUILayout.Width(22f));
+        GUILayout.Space(2f);
+        GUILayout.Label(isPresent ? "\u2714" : "\u2718", "TL SelectionButtonNew", GUILayout.Height(20f));
         
-        //오늘의 할일
-
-        
-
-
+        GUILayout.EndVertical();
+        GUI.color = Color.white;
         GUILayout.EndHorizontal();
 
+        //오늘의 할일
+
+
+
+
+        serializedObject.ApplyModifiedProperties();
     }
 
 
