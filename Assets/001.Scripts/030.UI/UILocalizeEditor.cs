@@ -37,15 +37,59 @@ public class UILocalizeEditor : Editor
         SerializedProperty sp = Utility.DrawProperty("Key", serializedObject, "key");
 
         string key = sp.stringValue;
-        bool isPresent = (_keyList != null) && _keyList.Contains(key);
-        GUI.color = isPresent ? Color.green : Color.red;
+        bool isExist = (_keyList != null) && _keyList.Contains(key);//key 가 _keyList에 존재하는가
+        GUI.color = isExist ? Color.green : Color.red;
+
+        //v, x 표시
         GUILayout.BeginVertical(GUILayout.Width(22f));
         GUILayout.Space(2f);
-        GUILayout.Label(isPresent ? "\u2714" : "\u2718", "TL SelectionButtonNew", GUILayout.Height(20f));
-        
+        GUILayout.Label(isExist ? "\u2714" : "\u2718", "TL SelectionButtonNew", GUILayout.Height(20f));
         GUILayout.EndVertical();
+
         GUI.color = Color.white;
         GUILayout.EndHorizontal();
+
+        if(isExist)
+        {
+            Utility.DrawHeader("preview");
+            string language = "";
+            string[] languageKey = Localization.knownLanguages;
+            string[] values;
+
+            if( Localization.dictionary.TryGetValue(key, out values) )
+            {
+                if(languageKey.Length != values.Length)
+                {
+                    EditorGUILayout.HelpBox("Number of keys doesn't match the number of values! Did you modify the dictionaries by hand at some point?", MessageType.Error);
+                }
+                else
+                {
+                    for( int i = 0; i < languageKey.Length; ++i)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(languageKey[i], GUILayout.Width(66f));
+
+                        if( GUILayout.Button(values[i], "AS TextArea", GUILayout.MinWidth(80f), GUILayout.MaxWidth(Screen.width - 110f)))
+                        {
+
+                        }
+
+
+
+                        GUILayout.EndHorizontal();
+                    }
+                }
+
+            }
+
+
+
+        }
+        else
+        {
+
+        }
+
 
         //오늘의 할일
 
