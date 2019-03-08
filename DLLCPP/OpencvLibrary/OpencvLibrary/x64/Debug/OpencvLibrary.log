@@ -1,0 +1,6 @@
+﻿  BKCPP.cpp
+d:\bk\project\roc\dllcpp\opencvlibrary\opencvlibrary\bkcpp.cpp(24): warning C4244: 'return': conversion from 'float' to 'int', possible loss of data
+d:\bk\project\roc\dllcpp\opencvlibrary\opencvlibrary\bkcpp.cpp(33): warning C4244: 'return': conversion from 'float' to 'int', possible loss of data
+d:\bk\project\roc\dllcpp\opencvlibrary\opencvlibrary\bkcpp.cpp(69): warning C4305: 'return': truncation from 'int' to 'bool'
+     Creating library D:\bk\Project\ROC\DLLCPP\OpencvLibrary\x64\Debug\OpencvLibrary.lib and object D:\bk\Project\ROC\DLLCPP\OpencvLibrary\x64\Debug\OpencvLibrary.exp
+  OpencvLibrary.vcxproj -> D:\bk\Project\ROC\DLLCPP\OpencvLibrary\x64\Debug\OpencvLibrary.dll

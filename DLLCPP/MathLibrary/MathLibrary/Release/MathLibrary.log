@@ -1,0 +1,8 @@
+﻿  stdafx.cpp
+  dllmain.cpp
+  MathLibrary.cpp
+     Creating library D:\bk\Project\ROC\DLLCPP\MathLibrary\Release\MathLibrary.lib and object D:\bk\Project\ROC\DLLCPP\MathLibrary\Release\MathLibrary.exp
+  Generating code
+  All 7 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  MathLibrary.vcxproj -> D:\bk\Project\ROC\DLLCPP\MathLibrary\Release\MathLibrary.dll

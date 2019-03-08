@@ -1,0 +1,6 @@
+﻿  Test01.cpp
+     Creating library D:\bk\Project\ROC\DLLCPP\TestDll01\x64\Release\TestDll01.lib and object D:\bk\Project\ROC\DLLCPP\TestDll01\x64\Release\TestDll01.exp
+  Generating code
+  All 4 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  TestDll01.vcxproj -> D:\bk\Project\ROC\DLLCPP\TestDll01\x64\Release\TestDll01.dll

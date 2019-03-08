@@ -150,9 +150,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 466255760}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8eb85a7ba18e3d443b852378ac2c1fc2, type: 3}
+  m_Script: {fileID: 11500000, guid: fedec39e4d6962247a92ba3ff2265fb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveObject: {fileID: 0}
+  moveSpeed: 0
+  wayPointStart: {fileID: 0}
+  wayPointEnd: {fileID: 0}
+  wayPointCount: 0
+  wayPointDistance: 0
+  wayPointList: []
+  curvedPointCount: 0
+  curvedPointList: []
 --- !u!1 &1301490536
 GameObject:
   m_ObjectHideFlags: 0

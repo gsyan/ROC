@@ -109,7 +109,29 @@ public class CurveMakerEditor : Editor
         script.wayPointEnd.SetParent(script.transform);
     }
 
-    
+
+
+
+
+    //배열 항목을 Inspector 에 표시되도록 해주는 부분
+    private bool bLlistVisibility01 = true;
+    private bool bLlistVisibility02 = true;
+    public void ListIterator(string propertyPath, ref bool visible)
+    {
+        SerializedProperty listProperty = serializedObject.FindProperty(propertyPath);
+        visible = EditorGUILayout.Foldout(visible, listProperty.name);
+        if (visible)
+        {
+            EditorGUI.indentLevel++;
+            for (int i = 0; i < listProperty.arraySize; i++)
+            {
+                SerializedProperty elementProperty = listProperty.GetArrayElementAtIndex(i);
+                Rect drawZone = GUILayoutUtility.GetRect(0f, 16f);
+                bool showChildren = EditorGUI.PropertyField(drawZone, elementProperty);
+            }
+            EditorGUI.indentLevel--;
+        }
+    }
 
 
 
