@@ -31,7 +31,15 @@ public static class GlobalValues
     public const int goldRechargeMax = 1000000;
 
     public const int FleetCount = 1;
-    
+
+
+    //Asset 경로
+    public const string PROJECT = "Assets/000.Project";
+    public const string LAUNCHER = PROJECT + "/050.Launcher";
+    public const string LAUNCHER_RESOURCES = LAUNCHER + "/Resources";
+    public const string LAUNCHER_RESOURCES_TEXTURE = LAUNCHER_RESOURCES + "/Texture";
+
+
 
     public static void Setup(ServerGlobalValues server)
     {

@@ -339,7 +339,7 @@ public class UIPanelLogin : UIPanelBase
         yield return ScreenBlinder.Instance.BlinderFadeIn();
 
         SceneLoad.nextScene = sceneName;
-        SceneManager.LoadScene("loading");
+        SceneManager.LoadScene("Loading");
 
     }
 
