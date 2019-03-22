@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
 
-public class Fleet : MonoBehaviour
+public class Fleet_Back : MonoBehaviour
 {
     private FleetInfo _fleetInfo;
 
@@ -16,15 +16,15 @@ public class Fleet : MonoBehaviour
     private Vector3[] _shipsPositionNext;
 
 
-    private List<Fleet> _fleetList;             // 스테이지에 등장한 모든 함대 리스트 참조값
-    private Fleet _targetFleet = null;          // 타겟으로 잡은 함대
+    private List<Fleet_Back> _fleetList;             // 스테이지에 등장한 모든 함대 리스트 참조값
+    private Fleet_Back _targetFleet = null;          // 타겟으로 잡은 함대
     
 	
     public void SetFleetInfo(FleetInfo info)
     {
         _fleetInfo = info;
     }
-    public void SetFleetList(ref List<Fleet> fleetList)//타겟 검색을 위해 스테이지의 전체 함대 리스트를 가지고 있는다.
+    public void SetFleetList(ref List<Fleet_Back> fleetList)//타겟 검색을 위해 스테이지의 전체 함대 리스트를 가지고 있는다.
     {
         _fleetList = fleetList;
     }
