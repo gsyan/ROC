@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace BKST
 {
+    /// <summary>
+    /// scene 최초 오브젝트에 컴퍼넌트 되어 있는 상태를 추천
+    /// PoolSystem 를 통해 풀에서 관리하는 자원을 부르고 소멸시킨다
+    /// </summary>
     [AddComponentMenu("BKST/PoolManager/PoolBK")]
     public sealed class PoolBK : MonoBehaviour
     {
@@ -14,9 +18,9 @@ namespace BKST
         public Transform poolObject;//부모로 쓸 별도의 오브젝트 없으면 현재의 오브젝트가 부모가 됨
         public bool _dontDestroyOnLoad = false;
         public float maxParticleDespawnTime = 300.0f;
-
-
         #endregion Inspector Parameters
+
+
 
         #region Private Properties
         private Dictionary<string, Transform> _prefabDic = new Dictionary<string, Transform>();//해당 prefab의 poolOfPrefab이 없어, 처음 만들때 여기 저장

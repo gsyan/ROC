@@ -22,7 +22,9 @@ public class AutoDespawnTime : MonoBehaviour {
         elapsedTime += ignoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime;
         if (elapsedTime >= time)
         {
+            
             BKST.PoolManager.GetPool(poolName).Despawn(transform);
+            //PoolSystem.DespawnParticle(transform);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ship : MonoBehaviour
+public class Ship : CharacterBK
 {
     private ShipInfo _shipInfo;
 
@@ -55,7 +55,7 @@ public class Ship : MonoBehaviour
         _beamCoolTime -= Time.deltaTime;
         if( _beamCoolTime < 0.0f )
         {
-            _beamCoolTime = _shipInfo.battleInfo.beamCool;
+            _beamCoolTime = _shipInfo.attackInfo.beamCool;
 
             
 

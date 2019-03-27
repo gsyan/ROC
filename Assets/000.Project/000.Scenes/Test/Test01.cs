@@ -4,17 +4,18 @@ using UnityEngine;
 
 public class Test01 : MonoBehaviour {
 
-    public Transform obj1;
-    public Transform obj2;
 
-
-
-    void Update ()
+    private void Start()
     {
-        float dot = Vector3.Dot(obj1.forward, obj2.forward);
-        float angle = 0.0f;
-        MathBK.AngleFromDot(dot, ref angle);
-        Debug.Log(angle);
+        
+
+    }
+
+
+
+    private void Update ()
+    {
+        
 
 
     }

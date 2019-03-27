@@ -195,24 +195,23 @@ public class GData
                     shipInfo.type = (ShipType)Enum.Parse(typeof(ShipType), columns[p++]);
                     shipInfo.grade = int.Parse(columns[p++]);
 
-                    BattleInfo battleInfo = new BattleInfo();
-                    battleInfo.beamType = (BeamType)Enum.Parse(typeof(BeamType), columns[p++]);
-                    battleInfo.beamGunCount = int.Parse(columns[p++]);
-                    battleInfo.beamCool = int.Parse(columns[p++]);
-                    battleInfo.missleType = (MissleType)Enum.Parse(typeof(MissleType), columns[p++]);
-                    battleInfo.missleGunCount = int.Parse(columns[p++]);
-                    battleInfo.missleCool = int.Parse(columns[p++]);
-                    battleInfo.fighterType = (FighterType)Enum.Parse(typeof(FighterType), columns[p++]);
-                    battleInfo.fighterCountCur = battleInfo.fighterCountMax = int.Parse(columns[p++]);
-                    battleInfo.fighterCool = int.Parse(columns[p++]);
-                    battleInfo.shieldType = (ShieldType)Enum.Parse(typeof(ShieldType), columns[p++]);
-                    battleInfo.defence = int.Parse(columns[p++]);
-                    battleInfo.hpCur = battleInfo.hpMax = int.Parse(columns[p++]);
-                    battleInfo.moveSpeed = int.Parse(columns[p++]);
-                    battleInfo.rotateSpeed = int.Parse(columns[p++]);
-                    battleInfo.attackRange = int.Parse(columns[p++]);
+                    CharacterInfo characterInfo = shipInfo;
+                    characterInfo.attackInfo.beamType = (BeamType)Enum.Parse(typeof(BeamType), columns[p++]);
+                    characterInfo.attackInfo.beamGunCount = int.Parse(columns[p++]);
+                    characterInfo.attackInfo.beamCool = int.Parse(columns[p++]);
+                    characterInfo.attackInfo.missleType = (MissleType)Enum.Parse(typeof(MissleType), columns[p++]);
+                    characterInfo.attackInfo.missleGunCount = int.Parse(columns[p++]);
+                    characterInfo.attackInfo.missleCool = int.Parse(columns[p++]);
+                    characterInfo.attackInfo.fighterType = (FighterType)Enum.Parse(typeof(FighterType), columns[p++]);
+                    characterInfo.attackInfo.fighterCountCur = characterInfo.attackInfo.fighterCountMax = int.Parse(columns[p++]);
+                    characterInfo.attackInfo.fighterCool = int.Parse(columns[p++]);
+                    characterInfo.attackInfo.attackRange = int.Parse(columns[p++]);
+                    characterInfo.defenceInfo.shieldType = (ShieldType)Enum.Parse(typeof(ShieldType), columns[p++]);
+                    characterInfo.defenceInfo.defence = int.Parse(columns[p++]);
+                    characterInfo.moveInfo.moveSpeed = int.Parse(columns[p++]);
+                    characterInfo.moveInfo.rotateSpeed = int.Parse(columns[p++]);
+                    characterInfo.hpCur = characterInfo.hpMax = int.Parse(columns[p++]);
 
-                    shipInfo.SetBattleInfo(battleInfo);
                     dic.Add(shipInfo.grade, shipInfo);
                     if( i != 9 )
                     {

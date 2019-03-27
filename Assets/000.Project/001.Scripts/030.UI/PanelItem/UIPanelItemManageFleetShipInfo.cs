@@ -31,14 +31,14 @@ public class UIPanelItemManageFleetShipInfo : MonoBehaviour
 
         //shipImage.spriteName = "";
 
-        beamType.text = "Beam: " + inInfo.battleInfo.beamType + ", Num: " + inInfo.battleInfo.beamGunCount.ToString();
-        missleType.text = "Missle: " + inInfo.battleInfo.missleType + ", Num: " + inInfo.battleInfo.missleGunCount.ToString();
-        fighterType.text = "Fighter: " + inInfo.battleInfo.fighterType + ", Num: " + inInfo.battleInfo.fighterCountCur.ToString() + " / " + inInfo.battleInfo.fighterCountMax.ToString();
-        shieldType.text = "Shield: " + inInfo.battleInfo.shieldType.ToString();
-        defence.text = "Defence: " + inInfo.battleInfo.defence.ToString();
-        hp.text = "hp: " + inInfo.battleInfo.hpCur.ToString() + " / " + inInfo.battleInfo.hpMax.ToString();
-        moveSpeed.text = "Move: " + inInfo.battleInfo.moveSpeed.ToString();
-        rotateSpeed.text = "Rotate: " + inInfo.battleInfo.rotateSpeed.ToString();
+        beamType.text = "Beam: " + inInfo.attackInfo.beamType + ", Num: " + inInfo.attackInfo.beamGunCount.ToString();
+        missleType.text = "Missle: " + inInfo.attackInfo.missleType + ", Num: " + inInfo.attackInfo.missleGunCount.ToString();
+        fighterType.text = "Fighter: " + inInfo.attackInfo.fighterType + ", Num: " + inInfo.attackInfo.fighterCountCur.ToString() + " / " + inInfo.attackInfo.fighterCountMax.ToString();
+        shieldType.text = "Shield: " + inInfo.defenceInfo.shieldType.ToString();
+        defence.text = "Defence: " + inInfo.defenceInfo.defence.ToString();
+        hp.text = "hp: " + inInfo.hpCur.ToString() + " / " + inInfo.hpMax.ToString();
+        moveSpeed.text = "Move: " + inInfo.moveInfo.moveSpeed.ToString();
+        rotateSpeed.text = "Rotate: " + inInfo.moveInfo.rotateSpeed.ToString();
 
         shipName.text = inInfo.name;
         shipLevel.text = "Grade: " + inInfo.grade.ToString();

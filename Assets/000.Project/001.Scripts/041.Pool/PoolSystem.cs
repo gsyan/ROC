@@ -5,7 +5,6 @@ using BKST;
 
 public static class PoolSystem
 {
-
     public static void LoadUI(string name)
     {
         DespawnUI(SpawnUI(name));

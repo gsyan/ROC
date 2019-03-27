@@ -8,8 +8,6 @@ namespace com.sbp.ai
     {
         private FleetAIController _aiController;
 
-        public bool IsReadyForSpawn { get; private set; }
-
         public FleetStateDisappear(AIController controller) : base(controller)
         {
             _aiController = (FleetAIController)controller;
@@ -18,9 +16,7 @@ namespace com.sbp.ai
         public override void OnStateEnter(State from, ITransition via)
         {
             base.OnStateEnter(from, via);
-            Debug.Log("FleetStateDisappear / OnStateEnter");
-
-            IsReadyForSpawn = false;
+            //Debug.Log("FleetStateDisappear / OnStateEnter");
 
             _aiController.StartCoroutine(Wait());
         }
@@ -34,15 +30,16 @@ namespace com.sbp.ai
         public override void OnStateExit(State to, ITransition via)
         {
             base.OnStateExit(to, via);
-            Debug.Log("FleetStateDisappear / OnStateExit");
+            //Debug.Log("FleetStateDisappear / OnStateExit");
         }
 
         private IEnumerator Wait()
         {
             yield return new WaitForSeconds(1);
 
-            _aiController.gameObject.SetActive(false);
-            IsReadyForSpawn = true;
+            this.SetTransition(_aiController.spawn);//다음 상태는 Spawn 으로 변경
+            
+            
         }
 
     }

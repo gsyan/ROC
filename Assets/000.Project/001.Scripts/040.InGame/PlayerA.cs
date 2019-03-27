@@ -7,7 +7,7 @@ public class PlayerA: MonoBehaviour
 {
     private PlayerInfo _playerInfo;
 
-    private Fleet_Back[] _fleet;
+    private Fleet[] _fleet;
     
 
     private void Awake()

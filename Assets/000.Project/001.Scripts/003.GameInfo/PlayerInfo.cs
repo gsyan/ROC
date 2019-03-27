@@ -74,7 +74,7 @@ public class PlayerInfo
         for (int s = 0; s < 5; ++s)//함선 수
         {
             ShipInfo sInfo = new ShipInfo();
-            sInfo.DeepCopyInfo(GData.Instance.GetShipInfo("test_d", 1));
+            sInfo.SetInfo(GData.Instance.GetShipInfo("test_d", 1));
             sInfo.linkCur = 3;
             sInfo.linkMax = 5;
             sInfo.belongFleet = 1;
@@ -91,7 +91,7 @@ public class PlayerInfo
         for (int s = 0; s < 6; ++s)//함선 수
         {
             ShipInfo sInfo = new ShipInfo();
-            sInfo.DeepCopyInfo(GData.Instance.GetShipInfo("test_d", 1));
+            sInfo.SetInfo(GData.Instance.GetShipInfo("test_d", 1));
             sInfo.linkCur = 1;
             sInfo.linkMax = 5;
             sInfo.belongFleet = 2;
@@ -108,7 +108,7 @@ public class PlayerInfo
         for (int s = 0; s < 8; ++s)//함선 수
         {
             ShipInfo sInfo = new ShipInfo();
-            sInfo.DeepCopyInfo(GData.Instance.GetShipInfo("test_d", 1));
+            sInfo.SetInfo(GData.Instance.GetShipInfo("test_d", 1));
             sInfo.linkCur = 1;
             sInfo.linkMax = 5;
             sInfo.belongFleet = 3;
@@ -125,7 +125,7 @@ public class PlayerInfo
         for (int s = 0; s < 3; ++s)//함선 수
         {
             ShipInfo sInfo = new ShipInfo();
-            sInfo.DeepCopyInfo(GData.Instance.GetShipInfo("test_d", 1));
+            sInfo.SetInfo(GData.Instance.GetShipInfo("test_d", 1));
             sInfo.linkCur = 1;
             sInfo.linkMax = 5;
             sInfo.belongFleet = 4;
@@ -142,7 +142,7 @@ public class PlayerInfo
         for (int s = 0; s < 1; ++s)//함선 수
         {
             ShipInfo sInfo = new ShipInfo();
-            sInfo.DeepCopyInfo(GData.Instance.GetShipInfo("test_d", 1));
+            sInfo.SetInfo(GData.Instance.GetShipInfo("test_d", 1));
             sInfo.linkCur = 1;
             sInfo.linkMax = 5;
             sInfo.belongFleet = 5;
