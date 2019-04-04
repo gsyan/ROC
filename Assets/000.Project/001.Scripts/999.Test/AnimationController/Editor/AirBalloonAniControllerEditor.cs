@@ -15,6 +15,9 @@ namespace com.sbp.ai
         SerializedProperty aniSpeed;
         SerializedProperty startFrame;
         SerializedProperty currentFrame;
+        SerializedProperty currentClip;
+        SerializedProperty currentClipTime;
+        SerializedProperty currentClipTimeTotal;
 
         SerializedProperty aniClips;
 
@@ -32,6 +35,10 @@ namespace com.sbp.ai
             aniSpeed = serializedObject.FindProperty("aniSpeed");
             startFrame = serializedObject.FindProperty("startFrame");
             currentFrame = serializedObject.FindProperty("currentFrame");
+            currentClip = serializedObject.FindProperty("currentClip");
+            currentClipTime = serializedObject.FindProperty("currentClipTime");
+            currentClipTimeTotal = serializedObject.FindProperty("currentClipTimeTotal");
+            
 
             aniClips = serializedObject.FindProperty("aniClips");
             steps = serializedObject.FindProperty("steps");
@@ -48,6 +55,11 @@ namespace com.sbp.ai
             EditorGUILayout.PropertyField(aniSpeed);
             EditorGUILayout.PropertyField(startFrame);
             EditorGUILayout.LabelField("currentFrame", _script.currentFrame.ToString());
+            EditorGUILayout.LabelField("currentClip", _script.currentClip);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("currentClipTime", _script.currentClipTime.ToString());
+            EditorGUILayout.LabelField("", "/" + _script.currentClipTimeTotal.ToString());
+            EditorGUILayout.EndHorizontal();
 
             ListIteratorClip("aniClips", ref showClips);
             ListIteratorStep("steps", ref showSteps);

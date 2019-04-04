@@ -7,35 +7,71 @@ namespace com.sbp.ai
     public class AirBalloon : MonoBehaviour
     {
         private AirBalloonAniController _aniController;
-        //private KEventController _kEventController;
-
+        
         private void Awake()
         {
             _aniController = gameObject.GetComponent<AirBalloonAniController>();
-            //_kEventController = gameObject.GetComponent<KEventController>();
         }
 
         private void Start()
         {
+#if UNITY_EDITOR
+            transform.Find("ForFX/Camera").localPosition = new Vector3(0, 1.7f, -0.016f);
+#endif
+
             if (_aniController != null)
             {
                 _aniController.StartAI();
             }
 
-            //if (_kEventController != null)
-            //{
-            //    _kEventController.StartAI();
-            //}
 
+            AddAnimationEvent();
+
+
+        }
+        private void AddAnimationEvent()
+        {
             Animator _animator = GetComponent<Animator>();
-            //myAnim. runtimeAnimatorController.animationClips[0];
             AnimationClip clip = _animator.runtimeAnimatorController.animationClips[1];
 
             AnimationEvent aniEvent = new AnimationEvent();
-            aniEvent.functionName = "LightControl";
-            aniEvent.time = 10.0f;
-
+            aniEvent.functionName = "Shake";
+            aniEvent.time = 6.0f;
             clip.AddEvent(aniEvent);
+
+            aniEvent = new AnimationEvent();
+            aniEvent.functionName = "LightControl";
+            aniEvent.time = 7.0f;
+            clip.AddEvent(aniEvent);
+
+            aniEvent = new AnimationEvent();
+            aniEvent.functionName = "Phytoncide";
+            aniEvent.time = 10.0f;
+            clip.AddEvent(aniEvent);
+
+
+            // 증산 작용 포스트 이팩트 필요?
+
+
+
+            clip = _animator.runtimeAnimatorController.animationClips[2];
+
+
+
+            clip = _animator.runtimeAnimatorController.animationClips[3];
+
+            aniEvent = new AnimationEvent();
+            aniEvent.functionName = "Baobab";
+            aniEvent.time = 50.0f;
+            clip.AddEvent(aniEvent);
+
+
+
+            clip = _animator.runtimeAnimatorController.animationClips[4];
+
+
+            clip = _animator.runtimeAnimatorController.animationClips[5];
+
 
 
 
@@ -51,17 +87,13 @@ namespace com.sbp.ai
         }
 
 
-        /// <summary>
-        /// shake balloon
-        /// </summary>
-        /// <param name="forSec"></param>
-        /// <param name="speed"></param>
-        /// <param name="amount"></param>
-        public void Shake(float forSec = 3.0f, float speed = 50.0f, float amount = 0.3f)
+        
+        // shake balloon
+        public void Shake()
         {
             if (!isShaking)
             {
-                StartCoroutine(ShakeCor(forSec, speed, amount));
+                StartCoroutine(ShakeCor(3.0f, 50.0f, 0.3f));
             }
         }
         bool isShaking = false;
@@ -94,25 +126,13 @@ namespace com.sbp.ai
             yield return null;
         }
 
-        /// <summary>
-        /// point light range control
-        /// </summary>
-        /// <param name="forSec"></param>
-        /// <param name="speed"></param>
-        /// <param name="wayValue"></param>
-        /// <param name="destinationValue"></param>
+        
+        // point light range control
         public void LightControl()
         {
             if (!isLightControlling)
             {
-                StartCoroutine(LightControlCor(2.0f, 100.0f, 10.0f, 50.0f));
-            }
-        }
-        public void LightControl(float forSec = 2.0f, float speed = 100.0f, float wayValue = 10.0f, float destinationValue = 50.0f)
-        {
-            if (!isLightControlling)
-            {
-                StartCoroutine(LightControlCor(forSec, speed, wayValue, destinationValue));
+                StartCoroutine(LightControlCor(3.0f, 100.0f, 10.0f, 50.0f));
             }
         }
         bool isLightControlling = false;
@@ -123,6 +143,7 @@ namespace com.sbp.ai
 
             Transform pointLight = transform.Find("ForFX").Find("Point Light");
             Light light = pointLight.GetComponent<Light>();
+
 
             while (elipse < 1.0f)
             {
@@ -164,6 +185,33 @@ namespace com.sbp.ai
             isLightControlling = false;
             yield return null;
         }
+
+
+        // Phytoncide
+        public void Phytoncide()
+        {
+            if (!isPhytoncideControlling)
+            {
+                StartCoroutine(PhytoncideCor());
+            }
+        }
+        bool isPhytoncideControlling = false;
+        private IEnumerator PhytoncideCor()
+        {
+            
+            yield return null;    
+        }
+
+
+
+
+        //Baobab
+        public void Baobab()
+        {
+            
+        }
+
+
 
     }
 }

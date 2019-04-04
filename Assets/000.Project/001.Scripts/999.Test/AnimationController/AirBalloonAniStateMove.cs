@@ -23,7 +23,6 @@ namespace com.sbp.ai
 
             if (_animator)
             {
-                _animator.SetBool("bGoing", true);
                 _animator.speed = _aniController.aniSpeed;
 
                 if (_aniController.startFrame >= 0.0f)
@@ -52,7 +51,7 @@ namespace com.sbp.ai
 
             AnimatorStateInfo asi = _animator.GetCurrentAnimatorStateInfo(0);
             AnimatorClipInfo[] myAnimatorClip = _animator.GetCurrentAnimatorClipInfo(0);
-            
+
             if (myAnimatorClip.Length > 0)
             {
                 for(int i = 0; i < _aniController.aniClips.Length; ++i)
@@ -60,11 +59,16 @@ namespace com.sbp.ai
                     if (myAnimatorClip[0].clip == _aniController.aniClips[i])
                     {
                         frameSum += _aniController.aniClips[i].length * asi.normalizedTime;
+                        //string s = string.Format("{0}/ Length: {1} / curInClip: {2}", myAnimatorClip[0].clip.name, myAnimatorClip[0].clip.length, _aniController.aniClips[i].length * asi.normalizedTime);
+                        _aniController.currentClip = myAnimatorClip[0].clip.name;
+                        _aniController.currentClipTime = _aniController.aniClips[i].length * asi.normalizedTime;
+                        _aniController.currentClipTimeTotal = _aniController.aniClips[i].length;
                         break;
                     }
                     else
                     {
                         frameSum += _aniController.aniClips[i].length;
+                        
                     }
                 }
 

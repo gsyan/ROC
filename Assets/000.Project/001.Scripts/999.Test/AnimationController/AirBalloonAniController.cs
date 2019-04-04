@@ -21,6 +21,13 @@ namespace com.sbp.ai
 
         public float currentFrame = 0.0f;// 현재 프래임 표시
 
+        public string currentClip = "";// 현재 플레이 중인 애니 클립
+
+        public float currentClipTime = 0.0f;// 현재 플레이 중인 애니 클립 의 진행 현황 (초 = sec)
+
+        public float currentClipTimeTotal = 0.0f;// 현재 플레이 중인 애니 클립 의 토탈 시간 (초 = sec)
+        
+
         [HideInInspector]
         public float jumpToFrame = -1.0f;// 점프로 이동할 프래임
 
