@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Playables;
 
 
 namespace CustomTimeline
 {
+    [Serializable]
     public class TimelineAsset : PlayableAsset
     {
         public TimelineBehaviour template;
